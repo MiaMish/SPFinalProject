@@ -1,0 +1,9 @@
+#ignore line
+    #ignore line 2
+	#contains tab and therefore illegal
+            
+
+spImagesPrefix = img #comment at the end is illegal
+spImagesPrefix = img nowItsIllegal
+spImagesPrefix img
+spNonExistentField = someValue

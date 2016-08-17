@@ -140,7 +140,7 @@ int spConfigGetPCADim(const SPConfig config, SP_CONFIG_MSG* msg);
  *
  * @return
  * - SP_CONFIG_INVALID_ARGUMENT - if imagePath == NULL or config == NULL
- * - SP_CONFIG_INDEX_OUT_OF_RANGE - if index >= spNumOfImages
+ * - SP_CONFIG_INDEX_OUT_OF_RANGE - if index >= spNumOfImages or index < 1
  * - SP_CONFIG_SUCCESS - in case of success
  */
 SP_CONFIG_MSG spConfigGetImagePath(char* imagePath, const SPConfig config,
@@ -166,7 +166,7 @@ SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config);
 
 /**
  * Frees all memory resources associate with config. 
- * If config == NULL nothig is done.
+ * If config == NULL nothing is done.
  */
 void spConfigDestroy(SPConfig config);
 

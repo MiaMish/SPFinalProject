@@ -1,0 +1,4 @@
+spMinimalGUI = maybe
+spMinimalGUI   =     true
+spMinimalGUI = false
+spMinimalGUI = FALSE
