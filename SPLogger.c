@@ -96,10 +96,11 @@ SP_LOGGER_MSG spLoggerCreate(const char* filename, SP_LOGGER_LEVEL level) {
 		return SP_LOGGER_OUT_OF_MEMORY;
 	}
 	logger->level = level; //Set the level of the logger
-	if (filename == NULL) { //In case the filename is not set use stdout
+	if (filename == NULL || strcmp(filename, "stdout")) {
+		//In case the filename is not set use stdout
 		logger->outputChannel = stdout;
 		logger->isStdOut = true;
-	} else { //Otherwise open the file in write mode
+	} else { //Otherwise  open the file in write mode
 		logger->outputChannel = fopen(filename, SP_LOGGER_OPEN_MODE);
 		if (logger->outputChannel == NULL) { //Open failed
 			free(logger);
