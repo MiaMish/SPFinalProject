@@ -124,7 +124,7 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 	int counter;
 	int lineCounter = 0;
 
-	asser(msg != NULL);
+	assert(msg != NULL);
 
 	if (filename == NULL) {
 		*msg = SP_CONFIG_INVALID_ARGUMENT;

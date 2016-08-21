@@ -6,6 +6,7 @@
  */
 
 #include "stdio.h"
+#include <stdlib.h>
 #include "stdbool.h"
 #include "assert.h"
 #include "limits.h"
@@ -38,7 +39,7 @@ SPKDArray* InitBasic(SPPoint* arr, int size, int dim) {
 
 	kdArr->dim = dim;
 
-	kdArr->sortedIndices = (int**) calloc(sizeof(int*) * dim);
+	kdArr->sortedIndices = (int**) calloc(dim, sizeof(int*));
 	NULL_CHECK(kdArr->sortedIndices, kdArr);
 
 	for (int i = 0; i < dim; i++) {
@@ -91,7 +92,9 @@ void fillIndices(SPKDArray* kdArr, int coor) {
 }
 
 static SPKDArray* currentKdArr = NULL;
+
 static int currentAxis = -1;
+
 int pointsComparator(void* ptr1, void* ptr2) {
 	int index1 = *(int*) ptr1;
 	int index2 = *(int*) ptr2;
@@ -107,7 +110,7 @@ int pointsComparator(void* ptr1, void* ptr2) {
 void sortIndices(SPKDArray* kdArr, int axis) {
 	currentKdArr = kdArr;
 	currentAxis = axis;
-	qsort(kdArr->sortedIndices[axis], kdArr->pointsCount, pointsComparator);
+	qsort(kdArr->sortedIndices[axis], kdArr->pointsCount,sizeof(kdArr->sortedIndices[0]), pointsComparator);
 }
 
 #define SPLIT_CLEANUP(leftMap, rightMap, leftPoints, rightPoints, leftTree, rightTree)   \
@@ -122,13 +125,13 @@ void SPKDArraySplit(SPKDArray* kdArr, int coor, SPKDArray** kdLeft, SPKDArray** 
 	*kdLeft = NULL;
 	*kdRight = NULL;
 
-	bool* leftMap = (bool*) calloc(sizeof(bool) * kdArr->pointsCount);
-	bool* rightMap = (bool*) calloc(sizeof(bool) * kdArr->pointsCount);
+	bool* leftMap = (bool*) calloc(kdArr->pointsCount, sizeof(bool));
+	bool* rightMap = (bool*) calloc(kdArr->pointsCount, sizeof(bool));
 
 	int leftSize = (kdArr->pointsCount + 1) / 2;
 	int rightSize = kdArr->pointsCount / 2;
-	SPPoint* leftPoints = (SPPoint*) calloc(sizeof(SPPoint) * leftSize);
-	SPPoint* rightPoints = (SPPoint*) calloc(sizeof(SPPoint) * rightSize);
+	SPPoint* leftPoints = (SPPoint*) calloc(leftSize, sizeof(SPPoint));
+	SPPoint* rightPoints = (SPPoint*) calloc(rightSize, sizeof(SPPoint));
 
 	if (leftMap == NULL || rightMap == NULL) {
 		SPLIT_CLEANUP(leftMap, rightMap, leftPoints, rightPoints, NULL, NULL);
