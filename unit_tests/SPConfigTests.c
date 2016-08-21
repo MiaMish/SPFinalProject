@@ -11,19 +11,8 @@
 #include "../SPLogger.h"
 #include "unit_test_util.h"
 
-//#define MAX_SIZE 1024
 
 /*
- * the options for the cut method when the kd-tree is build
- */
-typedef enum sp_methods {RANDOM, MAX_SPREAD, INCREMENTAL} Method;
-
-
-/*
- * the options for the image suffix
- */
-typedef enum imageTypes {jpg, png, bmp, gif} Types;
-
 bool stringToIntTest() {
 	char* str1 = "abd";
 	char* str2 = "145";
@@ -177,6 +166,7 @@ bool parseLineTest(int testType, char* fileName, SP_CONFIG_MSG* expectedMsg,
 
 	fclose(file);
 	spConfigDestroy(config);
+	return true;
 }
 
 bool parseLineGeneralTest() {
@@ -267,5 +257,6 @@ int main() {
 
 	return 1;
 }
+*/
 
 
