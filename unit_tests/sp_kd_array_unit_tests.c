@@ -58,7 +58,7 @@ bool GetPointsCount() {
 	SPPoint* points = fillPoints();
 	SPKDArray* kdArr = spKDArrayInit(points, POINTS_SIZE, POINTS_DIM);
 
-	ASSERT_EQUALS(spKDArrayGetPointsCount(kdArr), 3);
+	ASSERT_EQUALS(spKDArrayGetPointsCount(kdArr), POINTS_SIZE);
 
 	killPoints(points);
 	spKDArrayDestroy(kdArr);
@@ -190,6 +190,7 @@ bool SplitArray() {
 }
 
 int main() {
+	setbuf(stdout, NULL);
 	RUN_TEST(InitAndDestroyArray);
 	RUN_TEST(GetPointsCount);
 	RUN_TEST(GetPointAt);

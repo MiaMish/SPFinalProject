@@ -28,6 +28,7 @@ SPKDArray* InitBasic(SPPoint* arr, int size, int dim) {
 	SPKDArray* kdArr = (SPKDArray*) malloc(sizeof(SPKDArray));
 	NULL_CHECK(kdArr, kdArr);
 
+	kdArr->pointsCount = size;
 	kdArr->points = (SPPoint*) malloc(sizeof(SPPoint) * size);
 	NULL_CHECK(kdArr->points, kdArr);
 
@@ -191,7 +192,8 @@ SPPoint spKDArrayGetPointAt(SPKDArray* kdArr, int i) {
 }
 
 double spKDArrayGetPointVal(SPKDArray* kdArr, int dim, int i) {
-	return spPointGetAxisCoor(spKDArrayGetPointAt(kdArr, i), dim);
+	int index = kdArr->sortedIndices[dim][i];
+	return spPointGetAxisCoor(kdArr->points[index], dim);
 }
 
 int spKDArrayGetDimension(SPKDArray* kdArr) {
@@ -226,7 +228,7 @@ int spKDArrayFindMaxSpreadDimension(SPKDArray* kdArr) {
 }
 
 double spKDArrayGetMedian(SPKDArray* kdArr, int axis) {
-	int meanIndex = kdArr->sortedIndices[axis][(kdArr->pointsCount + 1) / 2];
+	int meanIndex = kdArr->sortedIndices[axis][(kdArr->pointsCount - 1) / 2];
 	SPPoint meanPoint = kdArr->points[meanIndex];
 	return spPointGetAxisCoor(meanPoint, axis);
 }
