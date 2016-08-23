@@ -1,0 +1,8 @@
+  spImagesDirectory = ./somefolder
+spImagesPrefix  = baloon
+  spImagesPrefix   =   img   
+spPCAFilename = someName
+spPCAFilename = My Little Pony
+spLoggerFilename = loggerName
+spLoggerFilename = stdout
+spLoggerFilename = MyLittle Logger

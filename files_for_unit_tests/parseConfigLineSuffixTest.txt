@@ -1,0 +1,6 @@
+spImagesSuffix = JPG
+spImagesSuffix = .gif
+spImagesSuffix = .jpg
+spImagesSuffix = .bmp
+spImagesSuffix = .png
+spImagesSuffix = .xml

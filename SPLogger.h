@@ -46,6 +46,9 @@ typedef enum sp_logger_msg_t {
 /** A type used for defining the logger**/
 typedef struct sp_logger_t* SPLogger;
 
+/**a global variable **/
+extern SPLogger logger;
+
 /**
  * Creates a logger. This function should be called once, prior
  * to the usage of any SP Logger print functions. It is the responsibility

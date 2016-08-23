@@ -1,0 +1,3 @@
+spExtractionMode = true
+spExtractionMode = TRUE
+spExtractionMode = false

@@ -1,0 +1,5 @@
+spKDTreeSplitMethod = RANDOM
+spKDTreeSplitMethod= RANDOMIZE
+  spKDTreeSplitMethod = INCREMENTAL
+spKDTreeSplitMethod = MAX_SPREAD
+spKDTreeSplitMethod =MAX_SPREAD
