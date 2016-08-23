@@ -25,6 +25,12 @@ extern "C" {
                 } \
 		} while (0)
 
+#define ASSERT_EQUALS(a,b) ASSERT_TRUE((a)==(b))
+
+#define ASSERT_NULL(a) ASSERT_TRUE((a)==NULL)
+
+#define ASSERT_NOT_NULL(a) ASSERT_FALSE((a)==NULL)
+
 #define RUN_TEST(f) do { \
 			if(f()==true){ \
 				fprintf(stdout, "%s  PASSS\n",#f);\

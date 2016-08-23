@@ -1,9 +1,6 @@
 #ifndef SPLIST_H_
 #define SPLIST_H_
 
-#ifndef SPLIST_H_
-#define SPLIST_H_
-
 #include <stdbool.h>
 #include "SPListElement.h"
 /**
@@ -269,7 +266,3 @@ void spListDestroy(SPList list);
 
 #endif /* SPLIST_H_ */
 
-
-
-
-#endif /* SPLIST_H_ */

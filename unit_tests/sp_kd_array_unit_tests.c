@@ -2,6 +2,7 @@
 #include "unit_test_util.h"
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #define POINTS_SIZE 5
 #define POINTS_DIM 3

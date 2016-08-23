@@ -21,13 +21,13 @@ struct SPKDTreeNode {
 	SPPoint leaf;
 };
 
-inline int randomDimension(int max)
+int randomDimension(int max)
 {
        double scaled = (double)rand()/RAND_MAX;
        return max*scaled + 1;
 }
 
-SPKDTreeNode* Init(SPKDArray* kdArr, spKDTreeSplitMethodEnum splitMethod, int parentSplittingDimension) {
+SPKDTreeNode* Init(SPKDArray* kdArr, SplitMethod splitMethod, int parentSplittingDimension) {
 	SPKDTreeNode* root = (SPKDTreeNode*) malloc(sizeof(SPKDTreeNode));
 	NULL_CHECK(root, root);
 
@@ -74,7 +74,7 @@ SPKDTreeNode* Init(SPKDArray* kdArr, spKDTreeSplitMethodEnum splitMethod, int pa
 	return root;
 }
 
-SPKDTreeNode* spKDTreeInit(SPKDArray* kdArr, spKDTreeSplitMethodEnum splitMethod) {
+SPKDTreeNode* spKDTreeInit(SPKDArray* kdArr, SplitMethod splitMethod) {
 	return Init(kdArr, splitMethod, 0);
 }
 
