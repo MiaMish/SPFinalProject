@@ -37,18 +37,6 @@ typedef enum sp_methods {RANDOM, MAX_SPREAD, INCREMENTAL} Method;
 /** the options for the image suffix **/
 typedef enum imageTypes {jpg, png, bmp, gif} Types;
 
-/*
- * bit fields where
- * field == 1 if the field was initialized
- * field == 0 otherwise
- */
-typedef struct AllSetFlag {
-	unsigned int is_spImagesDirectory_set : 1;
-	unsigned int is_spImagesPrefix_set : 1;
-	unsigned int is_spImagesSuffix_set : 1;
-	unsigned int is_spNumOfImages_set : 1;
-} *allSet;
-
 typedef struct sp_config_t{
 	char* spImagesDirectory;
 	char* spImagesPrefix;
@@ -64,17 +52,13 @@ typedef struct sp_config_t{
 	bool spMinimalGUI;
 	int spLoggerLevel;
 	char* spLoggerFilename;
-
-	allSet flag;
 } *SPConfig;
 
 /*
  * @param config - pointer to an uninitialized SPConfig
- * @param flags - pointer to an uninitialized allSet
- * puts default values in config and flags and
- * sets config->flag = flags
+ * puts default values in config
  */
-void initConfuguration(SPConfig* config, SP_CONFIG_MSG* msg);
+void initConfuguration(SPConfig* config);
 
 /*
  * if str is not a decimal number, returns -1
@@ -87,6 +71,16 @@ int convertStringToNum(char str[]);
  * if field isn't one of the fields of SPConfig than returns -1
  */
 int convertFieldToNum(char* field);
+
+/* @param method
+ * @returns method as string
+ */
+char* convertMethodToString(Method method);
+
+/* @param type
+ * @returns type as string
+ */
+char* convertTypeToString(Types type);
 
 /*
  * recieves a  string and tries to split it into field and value
@@ -114,7 +108,6 @@ void printError(char* filename, int lineNumber, char* msg);
 
 SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 	SPConfig config = NULL;
-	allSet flags = NULL;
 	FILE* file = NULL;
 	SP_LOGGER_MSG logMsg = SP_LOGGER_SUCCESS;
 	char field[MAX_SIZE];
@@ -137,36 +130,33 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 	}
 
 	config = (SPConfig*) malloc(sizeof(SPConfig));
-	flags = (allSet*) malloc(sizeof(flags));
 	if(config == NULL) {
 		*msg = SP_CONFIG_ALLOC_FAIL;
 		free(config);
 		config = NULL;
 		return config;
 	}
-	initConfiguration(config, msg);
+	initConfiguration(config);
 
-	if(msg != SP_CONFIG_SUCCESS) {
+	if(*msg != SP_CONFIG_SUCCESS) {
 		free(config);
 		config = NULL;
 		return config;
 	}
 
-	flags = config->flag;
-
 	while(fgets(line, MAX_SIZE, file)) {
 		lineCounter++;
 		parseConfigLine(line, config, msg);
-		if(msg != SP_CONFIG_SUCCESS) {
+		if(*msg != SP_CONFIG_SUCCESS) {
 			fclose(file);
-			if(msg == SP_CONFIG_INVALID_LINE) {
-				printError(config, lineCounter, invalidLine);
-			} else if (msg == SP_CONFIG_INVALID_INTEGER ||
-					msg == SP_CONFIG_INVALID_STRING ||
-					msg == SP_CONFIG_INVALID_BOOLEAN) {
-				printError(config, lineCounter, invalidValue);
+			if(*msg == SP_CONFIG_INVALID_LINE) {
+				printError(filename, lineCounter, invalidLine);
+			} else if (*msg == SP_CONFIG_INVALID_INTEGER ||
+					*msg == SP_CONFIG_INVALID_STRING ||
+					*msg == SP_CONFIG_INVALID_BOOLEAN) {
+				printError(filename, lineCounter, invalidValue);
 			} else {
-				printError(config, lineCounter, "Some error I didn't think about");
+				printError(filename, lineCounter, "Some error I didn't think about");
 			}
 
 			spConfigDestroy(config);
@@ -177,23 +167,23 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 
 	fclose(file);
 
-	if(flags->is_spImagesDirectory_set == 0) {
+	if(config->spImagesDirectory == NULL) {
 		*msg = SP_CONFIG_MISSING_DIR;
-		printError(config, lineCounter, directoryNotSet);
-	} else if (flags->is_spImagesPrefix_set == 0) {
+		printError(filename, lineCounter, directoryNotSet);
+	} else if (config->spImagesPrefix == NULL) {
 		*msg = SP_CONFIG_MISSING_PREFIX;
-		printError(config, lineCounter, preffixNotSet);
-	} else if (flags->is_spImagesSuffix_set == 0) {
+		printError(filename, lineCounter, preffixNotSet);
+	} else if (config->spImagesSuffix == NULL) {
 		*msg = SP_CONFIG_MISSING_SUFFIX;
-		printError(config, lineCounter, suffixNotSet);
-	} else if (flags->is_spNumOfImages_set == 0) {
+		printError(filename, lineCounter, suffixNotSet);
+	} else if (config->spNumOfImages == -1) {
 		*msg = SP_CONFIG_MISSING_NUM_IMAGES;
-		printError(config, lineCounter, imageNumNotSet);
+		printError(filename, lineCounter, imageNumNotSet);
 	} else {
 		*msg = SP_CONFIG_SUCCESS;
 	}
 
-	if (msg != SP_CONFIG_SUCCESS) {
+	if (*msg != SP_CONFIG_SUCCESS) {
 		spConfigDestroy(config);
 		config = NULL;
 	}
@@ -214,35 +204,35 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 }
 
 bool spConfigIsExtractionMode(const SPConfig config, SP_CONFIG_MSG* msg) {
-	if (!getterAssert(config, &msg)) {
+	if (!getterAssert(config, msg)) {
 		return false;
 	}
 	return (config->spExtractionMode == true);
 }
 
 bool spConfigMinimalGui(const SPConfig config, SP_CONFIG_MSG* msg) {
-	if (!getterAssert(config, &msg)) {
+	if (!getterAssert(config, msg)) {
 		return false;
 	}
 	return (config->spMinimalGUI == true);
 }
 
 int spConfigGetNumOfImages(const SPConfig config, SP_CONFIG_MSG* msg) {
-	if (!getterAssert(config, &msg)) {
+	if (!getterAssert(config, msg)) {
 		return -1;
 	}
 	return config->spNumOfImages;
 }
 
 int spConfigGetNumOfFeatures(const SPConfig config, SP_CONFIG_MSG* msg) {
-	if (!getterAssert(config, &msg)) {
+	if (!getterAssert(config, msg)) {
 		return -1;
 	}
 	return config->spNumOfFeatures;
 }
 
 int spConfigGetPCADim(const SPConfig config, SP_CONFIG_MSG* msg) {
-	if (!getterAssert(config, &msg)) {
+	if (!getterAssert(config, msg)) {
 		return -1;
 	}
 	return config->spPCADimension;
@@ -283,10 +273,6 @@ SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config) {
 
 void spConfigDestroy(SPConfig config) {
 	if (config != NULL) {
-		if (config->flag != NULL) {
-			free(config->flag);
-			config->flag = NULL;
-		}
 		if (logger != NULL) {
 			spLoggerDestroy();
 		}
@@ -298,7 +284,6 @@ void spConfigDestroy(SPConfig config) {
 void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 	char field[MAX_SIZE];
 	char value[MAX_SIZE];
-	allSet flags = config->flag;
 	int i = 0;
 	int count = 0;
 	int fieldId;
@@ -309,15 +294,13 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 	/*
 	 * comment lines or empty lines are allowed
 	 */
-	if (line[i] == '#' || line[i] == '\n' ||
-			line[i] == '\r\n' || line[i] == EOF) {
+	if (line[i] == '#' || line[i] == '\n' || line[i] == EOF) {
 		*msg = SP_CONFIG_SUCCESS;
 		return;
 	}
 
 	/** extracting the first string from line **/
-	while(line[i] != '\n' || line[i] != '\r\n' || line[i] != EOF ||
-			line[i] != ' ' || line[i] != '=') {
+	while(line[i] != '\n' || line[i] != EOF || line[i] != ' ' || line[i] != '=') {
 		field[count] = line[i];
 		count++;
 	}
@@ -333,9 +316,7 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 	count = 0;
 	i++; //the previous character '=' isn't part of the value
 	while(line[i] == ' ') i++;
-	while(line[i] != '\n' || line[i] != '\r\n' ||
-			line[i] != EOF || line[i] != ' ') {
-
+	while(line[i] != '\n' || line[i] != EOF || line[i] != ' ') {
 		value[count] = line[i];
 		count++;
 	}
@@ -365,20 +346,17 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 	switch (fieldId) {
 	case 1:
 		config->spImagesDirectory = value;
-		flags->is_spImagesDirectory_set = 1;
 		break;
 
 	case 2:
 		config->spImagesPrefix = value;
-		flags->is_spImagesPrefix_set = 1;
 		break;
 
 	case 3:
 		if(value[0] == '.') {
 			for (i = 0; i < (sizeof(Types)/sizeof(Types*)); i++) {
-				if (strcmp(value[1], Types[i]) == 0) {
-					config->spImagesSuffix = value;
-					flags->is_spImagesSuffix_set = 1;
+				if (strcmp(value[1], convertTypeToString(Types[i])) == 0) {
+					config->spImagesSuffix = Types[i];
 				}
 			}
 		} else {
@@ -389,7 +367,6 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 
 	case 4:
 		config->spNumOfImages = valueAsNum;
-		flags->is_spNumOfImages_set = 1;
 		break;
 
 	case 5:
@@ -409,8 +386,10 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 		break;
 
 	case 8:
-		if (strcmp(value, "true") == 0 || strcmp(value, "false") == 0) {
-			config->spExtractionMode = value;
+		if (strcmp(value, "true") == 0) {
+			config->spExtractionMode = true;
+		} else if(strcmp(value, "false") == 0) {
+			config->spExtractionMode = false;
 		} else {
 			*msg = SP_CONFIG_INVALID_BOOLEAN;
 			return;
@@ -423,8 +402,8 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 
 	case 10:
 		for (i = 0; i < (sizeof(Method)/sizeof(Method*)); i++) {
-			if (strcmp(value, Method[i]) == 0) {
-				config->spKDTreeSplitMethod = value;
+			if (strcmp(value, convertMethodToString((Method[i]))) == 0) {
+				config->spKDTreeSplitMethod = Method[i];
 			}
 		}
 		if (strcmp(config->spKDTreeSplitMethod, value) == 0) {
@@ -438,8 +417,10 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 			break;
 
 	case 12:
-		if (strcmp(value, "true") == 0 || strcmp(value, "false") == 0) {
-			config->spMinimalGUI = value;
+		if (strcmp(value, "true") == 0) {
+			config->spMinimalGUI = true;
+		} else if ( strcmp(value, "false") == 0) {
+			config->spMinimalGUI = false;
 		} else {
 			*msg = SP_CONFIG_INVALID_BOOLEAN;
 			return;
@@ -466,12 +447,7 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 	*msg = SP_CONFIG_SUCCESS;
 }
 
-void initConfuguration(SPConfig config, SP_CONFIG_MSG* msg) {
-	allSet flags = (allSet*) malloc(sizeof(allSet));
-	if (flags == NULL) {
-		msg = SP_CONFIG_ALLOC_FAIL;
-		return;
-	}
+void initConfuguration(SPConfig config) {
 	config->spPCADimension = spPCADimensionDefault;
 	config->spPCAFilename = spPCAFilenameDefault;
 	config->spNumOfFeatures = spNumOfFeaturesDefault;
@@ -483,13 +459,10 @@ void initConfuguration(SPConfig config, SP_CONFIG_MSG* msg) {
 	config->spLoggerLevel = spLoggerLevelDefault;
 	config->spLoggerFilename = spLoggerFilenameDefault;
 
-	flags->is_spImagesDirectory_set = 0;
-	flags->is_spImagesPrefix_set = 0;
-	flags->is_spImagesSuffix_set = 0;
-	flags->is_spNumOfImages_set = 0;
-
-	config->flag = flags;
-	*msg = SP_CONFIG_SUCCESS;
+	config->spImagesDirectory = NULL;
+	config->spImagesPrefix = NULL;
+	config->spImagesSuffix = NULL;
+	config->spNumOfImages = -1;
 }
 
 int convertFieldToNum(char* field) {
@@ -524,6 +497,36 @@ int convertStringToNum(char str[]) {
 		return -1;
 	}
 	return atoi(str);
+}
+
+char* convertMethodToString(Method method) {
+	switch(method) {
+	case 0:
+		return "RANDOM";
+	case 1:
+		return "MAX_SPREAD";
+	case 2:
+		return "INCREMENTAL";
+	}
+
+	/*shouldn't get to this line */
+	return NULL;
+}
+
+char* convertTypeToString(Types type) {
+	switch(type) {
+	case 0:
+		return "jpg";
+	case 1:
+		return "png";
+	case 2:
+		return "bmp";
+	case 3:
+		return "gif";
+	}
+
+	/*shouldn't reach this line */
+	return NULL;
 }
 
 bool getterAssert(const SPConfig config, SP_CONFIG_MSG* msg) {
@@ -602,15 +605,10 @@ bool initConfigurationTest() {
 	config = (SPConfig*) malloc(sizeof(config*));
 	initConfuguration(config, msg);
 
-	ASSERT_TRUE(config->flag->is_spImagesDirectory_set == 0);
-	ASSERT_TRUE(config->flag->is_spImagesPrefix_set == 0);
-	ASSERT_TRUE(config->flag->is_spImagesSuffix_set == 0);
-	ASSERT_TRUE(config->flag->is_spNumOfImages_set == 0);
-
 	ASSERT_TRUE(config->spImagesDirectory == NULL);
 	ASSERT_TRUE(config->spImagesPrefix == NULL);
 	ASSERT_TRUE(config->spImagesSuffix == NULL);
-	ASSERT_TRUE(config->spNumOfImages == NULL);
+	ASSERT_TRUE(config->spNumOfImages == -1);
 	ASSERT_TRUE(config->spPCADimension == 20);
 	ASSERT_TRUE(config->spPCAFilename == "pca.yml");
 	ASSERT_TRUE(config->spNumOfFeatures == 100);
@@ -618,7 +616,7 @@ bool initConfigurationTest() {
 	ASSERT_TRUE(config->spNumOfSimilarImages == 1);
 	ASSERT_TRUE(config->spKDTreeSplitMethod == false);
 	ASSERT_TRUE(config->spKNN == 1);
-	//ASSERT_TRUE(config->spMinimalGUI == enum methods[1]);
+	ASSERT_TRUE(config->spMinimalGUI == Method[1]);
 	ASSERT_TRUE(config->spLoggerLevel == 3);
 	ASSERT_TRUE(config->spLoggerFilename == stdout);
 	return true;
@@ -628,13 +626,13 @@ bool parseLineTest(int testType, char* fileName, SP_CONFIG_MSG* expectedMsg,
 		void* expectedValue) {
 	FILE* file = NULL;
 	SPConfig config = NULL;
-	SP_CONFIG_MSG msg = NULL;
-	char expectedSuffix[6] = NULL;
-	bool expectedMode[3] = NULL;
-	bool expectedGui[4] = NULL;
-	Method expectedMethod[5] = NULL;
-	char* expectedStr[8] = NULL;
-	int* expectedNum[21] = NULL;
+	SP_CONFIG_MSG* msg = NULL;
+	char expectedSuffix[6];
+	bool expectedMode[3];
+	bool expectedGui[4];
+	Method expectedMethod[5];
+	char* expectedStr[8];
+	int* expectedNum[21];
 
 	char line[MAX_SIZE];
 	int i = 0;
@@ -643,7 +641,7 @@ bool parseLineTest(int testType, char* fileName, SP_CONFIG_MSG* expectedMsg,
 	config = (SPConfig*) malloc(sizeof(SPConfig));
 
 	msg = (SP_CONFIG_MSG*) malloc(sizeof(SP_CONFIG_MSG));
-	initConfuguration(config, msg);
+	initConfuguration(config);
 
 	while(fgets(line, MAX_SIZE, file)) {
 		parseConfigLine(line, config, msg);
@@ -669,7 +667,6 @@ bool parseLineTest(int testType, char* fileName, SP_CONFIG_MSG* expectedMsg,
 			expectedStr = *(char*) expectedValue;
 			if(i == 0) {
 				ASSERT_TRUE(strcmp(config->spImagesDirectory, expectedStr[i]) == 0);
-				ASSERT_TRUE(config->flag->is_spImagesDirectory_set == 1);
 			} else if (i == 1 || i == 2) {
 				ASSERT_TRUE(strcmp(config->spImagesPrefix, expectedStr[i]) == 0);
 			} else if (i == 3 || i == 4) {
@@ -707,66 +704,66 @@ bool parseLineTest(int testType, char* fileName, SP_CONFIG_MSG* expectedMsg,
 
 bool parseLineGeneralTest() {
 	char* fileName = "ParseConfigLineGeneralTest.txt";
-	SP_CONFIG_MSG expectedMsg[10] = {SP_CONFIG_SUCCESS, SP_CONFIG_SUCCESS,
+	SP_CONFIG_MSG expectedMsg = {SP_CONFIG_SUCCESS, SP_CONFIG_SUCCESS,
 			SP_CONFIG_INVALID_STRING, SP_CONFIG_SUCCESS, SP_CONFIG_SUCCESS,
 			SP_CONFIG_INVALID_STRING,SP_CONFIG_INVALID_STRING,
 			SP_CONFIG_INVALID_STRING, SP_CONFIG_INVALID_STRING, SP_CONFIG_SUCCESS};
 
-	return parseLineTest(1, fileName, &expectedMsg, NULL);
+	return parseLineTest(1, fileName, expectedMsg, NULL);
 }
 
 bool parseLineSuffixTest() {
 	char* fileName = "ParseConfigLineSuffixTest.txt";
-	SP_CONFIG_MSG expectedMsg[6] = {SP_CONFIG_INVALID_STRING, SP_CONFIG_SUCCESS,
+	SP_CONFIG_MSG expectedMsg = {SP_CONFIG_INVALID_STRING, SP_CONFIG_SUCCESS,
 			SP_CONFIG_INVALID_STRING, SP_CONFIG_SUCCESS, SP_CONFIG_SUCCESS,
 			SP_CONFIG_INVALID_STRING};
-	char expectedSuffix[6] = {NULL, ".gif", ".jpg", ".bmp", ".png", ".png"};
+	char expectedSuffix = {NULL, ".gif", ".jpg", ".bmp", ".png", ".png"};
 
-	return parseLineTest(2, fileName, &expectedMsg, &expectedSuffix);
+	return parseLineTest(2, fileName, expectedMsg, &expectedSuffix);
 }
 
 bool parseLineModeTest() {
 	char* fileName = "ParseConfigLineModeTest.txt";
-	SP_CONFIG_MSG expectedMsg[3] = {SP_CONFIG_SUCCESS, SP_CONFIG_INVALID_STRING,
+	SP_CONFIG_MSG expectedMsg = {SP_CONFIG_SUCCESS, SP_CONFIG_INVALID_STRING,
 			SP_CONFIG_SUCCESS};
-	bool expectedMode[3] = {true, true, false};
+	bool expectedMode = {true, true, false};
 
-	return parseLineTest(3, fileName, &expectedMsg, &expectedMode);
+	return parseLineTest(3, fileName, expectedMsg, &expectedMode);
 }
 
 bool parseLineGuiTest() {
 	char* fileName = "ParseConfigLineGuiTest.txt";
-	SP_CONFIG_MSG expectedMsg[4] = {SP_CONFIG_INVALID_BOOLEAN, SP_CONFIG_SUCCESS,
+	SP_CONFIG_MSG expectedMsg = {SP_CONFIG_INVALID_BOOLEAN, SP_CONFIG_SUCCESS,
 			SP_CONFIG_SUCCESS, SP_CONFIG_INVALID_BOOLEAN};
-	bool expectedGui[4] = {false, true, false, false};
+	bool expectedGui = {false, true, false, false};
 
-	return parseLineTest(4, fileName, &expectedMsg, &expectedGui);
+	return parseLineTest(4, fileName, expectedMsg, &expectedGui);
 }
 
 bool parseLineMethodTest() {
 	char* fileName = "ParseConfigLineMethodTest.txt";
-	SP_CONFIG_MSG expectedMsg[5] = {SP_CONFIG_SUCCESS, SP_CONFIG_INVALID_STRING,
+	SP_CONFIG_MSG expectedMsg = {SP_CONFIG_SUCCESS, SP_CONFIG_INVALID_STRING,
 			SP_CONFIG_SUCCESS, SP_CONFIG_SUCCESS, SP_CONFIG_SUCCESS};
-	Method expectedMethod[5] = {RANDOM, RANDOM, INCREMENTAL, MAX_SPREAD,
+	Method expectedMethod = {RANDOM, RANDOM, INCREMENTAL, MAX_SPREAD,
 			MAX_SPREAD};
 
-	return parseLineTest(5, fileName, &expectedMsg, &expectedMethod);
+	return parseLineTest(5, fileName, expectedMsg, &expectedMethod);
 }
 
 bool parseLineStringTest() {
 	char* fileName = "ParseConfigLineBoolTest.txt";
-	SP_CONFIG_MSG expectedMsg[8] = {SP_CONFIG_SUCCESS, SP_CONFIG_SUCCESS,
+	SP_CONFIG_MSG expectedMsg = {SP_CONFIG_SUCCESS, SP_CONFIG_SUCCESS,
 			SP_CONFIG_SUCCESS, SP_CONFIG_INVALID_STRING, SP_CONFIG_SUCCESS,
 			SP_CONFIG_SUCCESS , SP_CONFIG_INVALID_STRING};
-	char* expectedStr[8] = {"./somefolder", "baloon", "img", "img", "loggerName",
+	char* expectedStr = {"./somefolder", "baloon", "img", "img", "loggerName",
 			"stdout", "stdout"};
 
-	return parseLineTest(6, fileName, &expectedMsg, &expectedStr);
+	return parseLineTest(6, fileName, expectedMsg, &expectedStr);
 }
 
 bool parseLineNumeralTest() {
-	char* fileName = "ParseConfigLineBoolTest.txt";
-	SP_CONFIG_MSG expectedMsg[21] = {SP_CONFIG_INVALID_INTEGER, SP_CONFIG_SUCCESS,
+	char* fileName = "ParseConfigLineNumeralTest.txt";
+	SP_CONFIG_MSG expectedMsg = {SP_CONFIG_INVALID_INTEGER, SP_CONFIG_SUCCESS,
 			SP_CONFIG_SUCCESS, SP_CONFIG_INVALID_INTEGER, SP_CONFIG_INVALID_INTEGER,
 			SP_CONFIG_SUCCESS , SP_CONFIG_INVALID_INTEGER, SP_CONFIG_SUCCESS,
 			SP_CONFIG_INVALID_INTEGER, SP_CONFIG_INVALID_INTEGER, SP_CONFIG_INVALID_INTEGER,
@@ -774,10 +771,10 @@ bool parseLineNumeralTest() {
 			SP_CONFIG_INVALID_INTEGER, SP_CONFIG_INVALID_INTEGER,
 			SP_CONFIG_SUCCESS, SP_CONFIG_INVALID_INTEGER, SP_CONFIG_SUCCESS,
 			SP_CONFIG_INVALID_INTEGER, SP_CONFIG_INVALID_INTEGER, SP_CONFIG_SUCCESS};
-	int* expectedNum[21] = {NULL, 5, 10, "img", "loggerName", 20, 20, 15, 13, 13,
+	int* expectedNum = {NULL, 5, 10, "img", "loggerName", 20, 20, 15, 13, 13,
 	13, 13, 4, 4, 2, 2, 4, 4, 4, 1};
 
-	return parseLineTest(7, fileName, &expectedMsg, &expectedNum);
+	return parseLineTest(7, fileName, expectedMsg, &expectedNum);
 }
 
 
