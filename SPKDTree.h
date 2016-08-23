@@ -18,10 +18,10 @@
 struct SPKDTreeNode;
 typedef struct SPKDTreeNode SPKDTreeNode;
 
-SPKDTreeNode* SPKDTreeInit(SPKDArray* kdArr, spKDTreeSplitMethodEnum splitMethod);
+SPKDTreeNode* spKDTreeInit(SPKDArray* kdArr, spKDTreeSplitMethodEnum splitMethod);
 
-void SPKDTreeDestroy(SPKDTreeNode* root);
+void spKDTreeDestroy(SPKDTreeNode* root);
 
-SPBPQueue SPKDTreeNearestNeighbor(SPKDTreeNode* root, SPPoint testPoint, int neighborsCount, int spKNN);
+SPBPQueue spKDTreeNearestNeighbor(SPKDTreeNode* root, SPPoint testPoint, int neighborsCount, int spKNN);
 
 #endif /* SPKDTREE_H_ */

@@ -5,10 +5,10 @@
  *      Author: user
  */
 
-#include "stdio.h"
-#include "stdbool.h"
-#include "assert.h"
-#include "limits.h"
+#include <stdio.h>
+#include <stdbool.h>
+#include <assert.h>
+#include <limits.h>
 #include "SPKDArray.h"
 
 #define NULL_CHECK(val,kdArr) if (val == NULL) { Destroy(kdArr); return NULL; }
@@ -49,7 +49,7 @@ SPKDArray* InitBasic(SPPoint* arr, int size, int dim) {
 	return kdArr;
 }
 
-SPKDArray* SPKDArrayInit(SPPoint* arr, int size, int dim) {
+SPKDArray* spKDArrayInit(SPPoint* arr, int size, int dim) {
 	SPKDArray* kdArr = InitBasic(arr, size, dim);
 	if (kdArr == NULL) {
 		return NULL;
@@ -63,7 +63,7 @@ SPKDArray* SPKDArrayInit(SPPoint* arr, int size, int dim) {
 	return kdArr;
 }
 
-void SPKDArrayDestroy(SPKDArray* kdArr) {
+void spKDArrayDestroy(SPKDArray* kdArr) {
 	if (kdArr == NULL) {
 		return;
 	}
@@ -118,7 +118,7 @@ void sortIndices(SPKDArray* kdArr, int axis) {
 	Destroy(leftTree);   \
 	Destroy(rightTree)
 
-void SPKDArraySplit(SPKDArray* kdArr, int coor, SPKDArray** kdLeft, SPKDArray** kdRight) {
+void spKDArraySplit(SPKDArray* kdArr, int coor, SPKDArray** kdLeft, SPKDArray** kdRight) {
 	*kdLeft = NULL;
 	*kdRight = NULL;
 
@@ -179,19 +179,19 @@ void SPKDArraySplit(SPKDArray* kdArr, int coor, SPKDArray** kdLeft, SPKDArray** 
 	SPLIT_CLEANUP(leftMap, rightMap, leftPoints, rightPoints, NULL, NULL);
 }
 
-int SPKDArrayGetPointsCount(SPKDArray* kdArr) {
+int spKDArrayGetPointsCount(SPKDArray* kdArr) {
 	return kdArr->pointsCount;
 }
 
-SPPoint SPKDArrayGetPointAt(SPKDArray* kdArr, int i) {
+SPPoint spKDArrayGetPointAt(SPKDArray* kdArr, int i) {
 	return kdArr->points[i];
 }
 
-int SPKDArrayGetDimension(SPKDArray* kdArr) {
+int spKDArrayGetDimension(SPKDArray* kdArr) {
 	return kdArr->dim;
 }
 
-int SPKDArrayFindMaxSpreadDimension(SPKDArray* kdArr) {
+int spKDArrayFindMaxSpreadDimension(SPKDArray* kdArr) {
 	int maxSpread = INT_MIN;
 	int maxSpreadDim = -1;
 
@@ -218,7 +218,7 @@ int SPKDArrayFindMaxSpreadDimension(SPKDArray* kdArr) {
 	return maxSpreadDim;
 }
 
-double SPKDArrayGetMedian(SPKDArray* kdArr, int axis) {
+double spKDArrayGetMedian(SPKDArray* kdArr, int axis) {
 	int meanIndex = kdArr->sortedIndices[axis][(kdArr->points + 1) / 2];
 	SPPoint meanPoint = kdArr->points[meanIndex];
 	return spPointGetAxisCoor(meanPoint, axis);

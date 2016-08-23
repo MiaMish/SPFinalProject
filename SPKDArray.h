@@ -13,22 +13,22 @@
 struct SPKDArray;
 typedef struct SPKDArray SPKDArray;
 
-SPKDArray* SPKDArrayInit(SPPoint* arr, int size, int dim);
+SPKDArray* spKDArrayInit(SPPoint* arr, int size, int dim);
 
-void SPKDArrayDestroy(SPKDArray* kdArr);
+void spKDArrayDestroy(SPKDArray* kdArr);
 
-void SPKDArraySplit(SPKDArray* kdArr, int coor, SPKDArray** kdLeft, SPKDArray** kdRight);
+void spKDArraySplit(SPKDArray* kdArr, int coor, SPKDArray** kdLeft, SPKDArray** kdRight);
 
-int SPKDArrayGetPointsCount(SPKDArray* kdArr);
+int spKDArrayGetPointsCount(SPKDArray* kdArr);
 
-SPPoint SPKDArrayGetPointAt(SPKDArray* kdArr, int i);
+SPPoint spKDArrayGetPointAt(SPKDArray* kdArr, int i);
 
-double SPKDArrayGetPointVal(SPKDArray* kdArr, int dim, int i);
+double spKDArrayGetPointVal(SPKDArray* kdArr, int dim, int i);
 
-int SPKDArrayGetDimension(SPKDArray* kdArr);
+int spKDArrayGetDimension(SPKDArray* kdArr);
 
-int SPKDArrayFindMaxSpreadDimension(SPKDArray* kdArr);
+int spKDArrayFindMaxSpreadDimension(SPKDArray* kdArr);
 
-double SPKDArrayGetMedian(SPKDArray* kdArr, int axis);
+double spKDArrayGetMedian(SPKDArray* kdArr, int axis);
 
 #endif /* SPKDARRAY_H_ */
