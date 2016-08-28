@@ -5,6 +5,23 @@
 #ifndef SPCONFIGUTILS_H_
 #define SPCONFIGUTILS_H_
 
+#include "SPConfig.h"
+
+#define MAX_SIZE 1024
+
+/** suffix for features file **/
+#define spFeatsSuffix "feats"
+
+/** the options for the cut method when the kd-tree is build **/
+typedef enum sp_methods {
+	RANDOM = 0, MAX_SPREAD = 1, INCREMENTAL = 2
+} SplitMethod;
+
+/** the options for the image suffix **/
+typedef enum imageTypes {
+	jpg, png, bmp, gif
+} ImageType;
+
 /*
  * if str is not a decimal number, returns -1
  * else returns an integer representing str
@@ -29,19 +46,16 @@ const char* convertTypeToString(ImageType type);
 
 /*
  * recieves a  string and tries to split it into field and value
- * @returns SP_CONFIG_SUCCESS if managed to update a field in config
- * @returns SP_CONFIG_INVALID_STRING if line is not in the correct format
- * @returns SP_CONFIG_INVALID_INTEGER if value is supposed to be an integer,
- * but is not one
+ * msg = SP_CONFIG_SUCCESS if managed to update a field in config
+ * msg = SP_CONFIG_INVALID_STRING if line is not in the correct format
+ * msg = SP_CONFIG_INVALID_INTEGER if value is supposed to be an integer,
+ * msg = SP_CONFIG_INVALID_LINE if field doesn't exist but is not one
+ *
+ * @return non-negative number if line is valid
+ * @return -1 if line is not valid
  */
-void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg);
-
-/*
- * @assert msg != NULL
- * @returns true if config != NULL
- * and false otherwise
- */
-bool getterAssert(const SPConfig config, SP_CONFIG_MSG* msg);
+int findFieldAndValue(char* line, SPConfig config, SP_CONFIG_MSG* msg,
+		char* field,char* value);
 
 /*
  * @param filename - the name of the configuration file

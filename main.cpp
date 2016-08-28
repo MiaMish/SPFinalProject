@@ -3,21 +3,27 @@
  */
 
 #include <cstdlib> //include c library
-#include <stdio>
+#include <stdio.h>
+#include "SPImageProc.h"
 
 extern "C"{
 //include your own C source files
 #include "SPPoint.h"
 #include "SPLogger.h"
 #include "SPConfig.h"
-#include "mainaux.c"
+#include "main_aux.c"
 }
 
 int main(int argc, char* argv[]) {
 	char* filename = "spcbir.config"; //default name
 	FILE* file = NULL;
-	SP_CONFIG_MSG* msg;
-	SPConfig config;
+	SP_CONFIG_MSG* msg = NULL;
+	SPConfig config = NULL;
+	char* imagePath = NULL;
+	SPPoint* imFeatures = NULL;
+	int* numOfFeats = NULL;
+	char* query = NULL;
+	int numOfImages;
 	int i;
 
 	/* should be at most 2 arguments: program name and config name */
@@ -36,8 +42,7 @@ int main(int argc, char* argv[]) {
 
 	msg = (SP_CONFIG_MSG*) malloc(sizeof(SP_CONFIG_MSG));
 	if (msg == NULL) {
-		//TODO terminate program
-		return 0;
+		return terminate(config, msg);
 	}
 
 	config = spConfigCreate(filename, msg);
@@ -48,21 +53,78 @@ int main(int argc, char* argv[]) {
 		} else {
 			printf("The configuration file <filename> couldn’t be open\n");
 		}
-		//TODO terminate program
-		return 0;
+		return terminate(config, msg);;
 	} else if (msg != SP_CONFIG_SUCCESS) {
-		//TODO terminate program
-		return 0;
+		return terminate(config, msg);
 	}
 
+	numOfFeats = (int*)malloc(sizeof(int));
+	if (numOfFeats == NULL) {
+		msg = SP_CONFIG_ALLOC_FAIL;
+		return terminate(config, msg);
+	}
+
+	numOfImages = spConfigGetNumOfImages(config, msg);
+	ImageProc(config);
+
 	if (spConfigIsExtractionMode(config, msg)) {
-		for (int i = 1; i <= spConfigGetNumOfImages(config, msg); i++) {
-			extractFeaturesFromIm(config, msg, i);
+		for (i = 1; i <= numOfImages; i++) {
+			msg = spConfigGetImagePath(imagePath, config, i);
+			if (msg != SP_CONFIG_SUCCESS) {
+				free(numOfFeats);
+				return terminate(config, msg);
+			}
+			imFeatures = getImageFeatures(imagePath, i, numOfFeats);
+			if (imFeatures == NULL) {
+				free(numOfFeats);
+				return terminate(config, msg);
+			}
+
+			createFeaturesFile(imFeatures, msg, numOfFeats, config, i);
+			free(imFeatures);
+		}
+	} else if (!nonExtractionModeLegal(config, msg, numOfImages)) {
+		free(numOfFeats);
+		return terminate(config, msg);
+	}
+
+	free(numOfFeats);
+
+
+	printf("Please enter an image path:\n");
+	while (gets(query) != NULL && strcmp(query, "<>") != 0) {
+
+		/*
+		 * 1 - store all features in KD-Tree
+		 * 2 - for each feature of query image, find the k-nearest features
+		 * 3 - for each image, keep track of the number of times it was among
+		 *     the nearest features
+		 * 4 - display the nearest images
+		 */
+
+		if (spConfigMinimalGui(config, msg)) {
+
+			for (i = 0; i < spConfigGetNumOfSimIms(config, msg); i++) {
+
+				showImage(imagePath);
+				getchar();
+				//until user presses some key, the same image will
+				//show on screen
+				free(imagePath);
+			}
+		} else {
+			printf("Best candidates for - <query image path> - are:\n");
+
+			for (i = 0; i < spConfigGetNumOfSimIms(config, msg); i++) {
+
+				printf("%s\n", imagePath);
+				free(imagePath);
+			}
 		}
 	}
 
 
-	return 1;
+	return terminate(config, msg);
 }
 
 

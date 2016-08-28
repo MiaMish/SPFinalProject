@@ -9,18 +9,7 @@
 #include "SPConfigUtils.h"
 #include "SPLogger.h"
 
-/** the options for the cut method when the kd-tree is build **/
-typedef enum sp_methods {
-	RANDOM = 0, MAX_SPREAD = 1, INCREMENTAL = 2
-} SplitMethod;
-
-/** the options for the image suffix **/
-typedef enum imageTypes {
-	jpg, png, bmp, gif
-} ImageType;
-
 /** default values for configuration **/
-#define MAX_SIZE 1024
 #define spPCADimensionDefault 20
 #define spPCAFilenameDefault "pca.yml"
 #define spNumOfFeaturesDefault 100
@@ -29,8 +18,6 @@ typedef enum imageTypes {
 #define spLoggerLevelDefault 3
 #define spLoggerFilenameDefault "stdout"
 #define spKDTreeSplitMethodDefault MAX_SPREAD
-
-
 
 /**the range of spPCADimension **/
 #define PCADimUpperBound 28
@@ -49,12 +36,6 @@ typedef enum imageTypes {
 #define msgIsNull "msg is NULL"
 #define argIsNull "one of the arguments is NULL"
 
-/** the options for the cut method when the kd-tree is build **/
-typedef enum sp_methods {RANDOM, MAX_SPREAD, INCREMENTAL} Method;
-
-/** the options for the image suffix **/
-typedef enum imageTypes {jpg, png, bmp, gif} Types;
-
 struct sp_config_t{
 	char* spImagesDirectory;
 	char* spImagesPrefix;
@@ -65,7 +46,7 @@ struct sp_config_t{
 	int spNumOfFeatures;
 	bool spExtractionMode;
 	int spNumOfSimilarImages;
-	Method spKDTreeSplitMethod;
+	SplitMethod spKDTreeSplitMethod;
 	int spKNN;
 	bool spMinimalGUI;
 	int spLoggerLevel;
@@ -84,23 +65,47 @@ void initConfiguration(SPConfig config);
  * @returns SP_CONFIG_SUCCESS if managed to update a field in config
  * @returns SP_CONFIG_INVALID_STRING if line is not in the correct format
  * @returns SP_CONFIG_INVALID_INTEGER if value is supposed to be an integer,
+ * @return SP_CONFIG_INVALID_LINE if field doesn't exist
  * but is not one
  */
 void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg);
 
+/*
+ *
+ * Given an index 'index' the function stores in imagePath the full path of the
+ * ith file with the suffix given.
+ *
+ * @param imagePath - an address to store the result in, it must contain enough space.
+ * @param config - the configuration structure
+ * @param index - the index of the image.
+ *
+ * @return
+ * - SP_CONFIG_INVALID_ARGUMENT - if imagePath == NULL or config == NULL
+ * - SP_CONFIG_INDEX_OUT_OF_RANGE - if index >= spNumOfImages or index < 1
+ * - SP_CONFIG_SUCCESS - in case of success
+ */
+SP_CONFIG_MSG createFilePath(char* imagePath, const SPConfig config,
+		int index, char* suffix);
+
+/*
+ * @assert msg != NULL
+ * @returns true if config != NULL
+ * and false otherwise
+ */
+bool getterAssert(const SPConfig config, SP_CONFIG_MSG* msg);
 
 
 SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 	SPConfig config = NULL;
 	FILE* file = NULL;
-	SP_LOGGER_MSG logMsg = SP_LOGGER_SUCCESS;
+	SP_LOGGER_MSG logMsg = NULL;
 	char line[MAX_SIZE];
 	int lineCounter = 0;
 
 	assert(msg != NULL);
 
 	if (filename == NULL) {
-		*msg = SP_CONFIG_INVALID_ARGUMENT;
+		msg = SP_CONFIG_INVALID_ARGUMENT;
 		return config;
 	}
 	file = fopen(filename, "r");
@@ -219,39 +224,63 @@ int spConfigGetPCADim(const SPConfig config, SP_CONFIG_MSG* msg) {
 	return config->spPCADimension;
 }
 
+int spConfigGetNumOfSimIms(const SPConfig config, SP_CONFIG_MSG* msg) {
+	if (!getterAssert(config, msg)) {
+		return -1;
+	}
+	return config->spNumOfSimilarImages;
+}
+
 SP_CONFIG_MSG spConfigGetImagePath(char* imagePath, const SPConfig config,
 		int index) {
 
-	if (imagePath == NULL || config == NULL) {
-		return SP_CONFIG_INVALID_ARGUMENT;
-	}
+	return createFilePath(imagePath, config, index, config->spImagesSuffix);
+}
 
-	if (index >= config->spNumOfImages || index < 1) {
-		return SP_CONFIG_INDEX_OUT_OF_RANGE;
-	}
-	/*
-	int pathLength = sprintf(imagePath, "%s%s%d%s\n", config->spImagesDirectory,
-			config->spImagesPrefix, index, config->spImagesSuffix);
-	if (pathLength < 1) {
-		return SOME_ERROR_MASSAGE;
-	}
-	*/
-	return SP_CONFIG_SUCCESS;
+SP_CONFIG_MSG spConfigGetImageFeatsPath(char* imagePath, const SPConfig config,
+		int index) {
+
+	return createFilePath(imagePath, config, index, spFeatsSuffix);
 }
 
 SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config) {
+	int pathLength;
+
 	if (pcaPath == NULL || config == NULL) {
 		return SP_CONFIG_INVALID_ARGUMENT;
 	}
 
-	/*
-	int pathLength = sprintf(pcaPath, "%s%s\n", config->spImagesDirectory,
+	realloc(pcaPath, sizeof(*config->spImagesDirectory)
+			+ sizeof(*config->spPCAFilename));
+
+	pathLength = sprintf(pcaPath, "%s%s\n", config->spImagesDirectory,
 			config->spPCAFilename);
 	if (pathLength < 1) {
-		return SOME_ERROR_MASSAGE;
+		return SP_CONFIG_UNKNOWN_ERROR;
 	}
-	*/
+
 	return SP_CONFIG_SUCCESS;
+}
+
+char* spConfigGetDirectory(const SPConfig config, SP_CONFIG_MSG* msg) {
+	if (!getterAssert(config, msg)) {
+		return NULL;
+	}
+	return config->spImagesDirectory;
+}
+
+char* spConfigGetPrefix(const SPConfig config, SP_CONFIG_MSG* msg) {
+	if (!getterAssert(config, msg)) {
+		return NULL;
+	}
+	return config->spImagesPrefix;
+}
+
+char* spConfigGetSuffix(const SPConfig config, SP_CONFIG_MSG* msg) {
+	if (!getterAssert(config, msg)) {
+		return NULL;
+	}
+	return config->spImagesSuffix;
 }
 
 void spConfigDestroy(SPConfig config) {
@@ -277,48 +306,9 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 	int fieldId;
 	int valueAsNum;
 
-	while (line[i] == ' ')
-		i++;
-
-	/*
-	 * comment lines or empty lines are allowed
-	 */
-	if (line[i] == '#' || line[i] == '\n' || line[i] == EOF) {
-		*msg = SP_CONFIG_SUCCESS;
+	fieldId = findFieldAndValue(line, config, msg, &field, &value);
+	if (fieldId <= 0) {
 		return;
-	}
-
-	/** extracting the first string from line **/
-	while (line[i] != '\n' || line[i] != EOF || line[i] != ' ' || line[i] != '=') {
-		field[count] = line[i];
-		count++;
-	}
-	value[count] = '\0';
-
-	fieldId = convertFieldToNum(field);
-	if (line[i] != '=' || fieldId == -1) {
-		*msg = SP_CONFIG_INVALID_LINE;
-		return;
-	}
-
-	/** extracting the second string from line **/
-	count = 0;
-	i++; //the previous character '=' isn't part of the value
-	while (line[i] == ' ')
-		i++;
-	while (line[i] != '\n' || line[i] != EOF || line[i] != ' ') {
-		value[count] = line[i];
-		count++;
-	}
-	value[count] = '\0';
-
-	while (line[i] != '\n' || line[i] != EOF) {
-		if (line[i] != ' ') {
-			*msg = SP_CONFIG_INVALID_STRING;
-			return;
-		}
-		value[count] = line[i];
-		count++;
 	}
 
 	/*
@@ -344,7 +334,7 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 
 	case 3:
 		if (value[0] == '.') {
-			for (i = 0; i < (sizeof(ImageType) / sizeof(ImageType*)); i++) {
+			for (i = 0; i < (sizeof(ImageType) / sizeof(*ImageType)); i++) {
 				const char* typeString = convertTypeToString((ImageType) i);
 				if (strcmp(value, typeString) == 0) {
 					config->spImagesSuffix = (char*) typeString;
@@ -456,4 +446,39 @@ void initConfuguration(SPConfig config) {
 	config->spNumOfImages = -1;
 }
 
+SP_CONFIG_MSG createFilePath(char* imagePath, const SPConfig config,
+		int index, char* suffix) {
 
+	int pathLen;
+
+	if (imagePath == NULL || config == NULL) {
+		return SP_CONFIG_INVALID_ARGUMENT;
+	}
+
+	if (index >= config->spNumOfImages || index < 1) {
+		return SP_CONFIG_INDEX_OUT_OF_RANGE;
+	}
+
+	realloc(imagePath, sizeof(*config->spImagesDirectory)
+			+ sizeof(*config->spImagesPrefix) + sizeof(*index) + sizeof(suffix));
+
+	pathLen = sprintf(imagePath, "%s%s%d%s\n", config->spImagesDirectory,
+			config->spImagesPrefix, index, suffix);
+	if (pathLen < 1) {
+		return SP_CONFIG_UNKNOWN_ERROR;
+	}
+
+	return SP_CONFIG_SUCCESS;
+}
+
+bool getterAssert(const SPConfig config, SP_CONFIG_MSG* msg) {
+	assert(msg != NULL);
+
+	if (config == NULL) {
+		*msg = SP_CONFIG_INVALID_ARGUMENT;
+		return false;
+	}
+
+	*msg = SP_CONFIG_SUCCESS;
+	return true;
+}

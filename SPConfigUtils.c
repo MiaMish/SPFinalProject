@@ -10,6 +10,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <ctype.h>
 
@@ -92,17 +93,61 @@ const char* convertTypeToString(ImageType type) {
 	return NULL;
 }
 
-bool getterAssert(const SPConfig config, SP_CONFIG_MSG* msg) {
-	assert(msg != NULL);
+int findFieldAndValue(char* line, SPConfig config, SP_CONFIG_MSG* msg,
+		char* field,char* value) {
 
-	if (config == NULL) {
-		*msg = SP_CONFIG_INVALID_ARGUMENT;
-		return false;
+	int i = 0;
+	int count = 0;
+	int fieldId;
+	int valueAsNum;
+
+	while (line[i] == ' ')
+		i++;
+
+	/*
+	* comment lines or empty lines are allowed
+	*/
+	if (line[i] == '#' || line[i] == '\n' || line[i] == EOF) {
+		*msg = SP_CONFIG_SUCCESS;
+		return 0;
 	}
 
-	*msg = SP_CONFIG_SUCCESS;
-	return true;
+	/** extracting the first string from line **/
+	while (line[i] != '\n' || line[i] != EOF || line[i] != ' '
+			|| line[i] != '=') {
+		field[count] = line[i];
+		count++;
+	}
+	value[count] = '\0';
+
+	fieldId = convertFieldToNum(field);
+	if (line[i] != '=' || fieldId == -1) {
+		*msg = SP_CONFIG_INVALID_LINE;
+		return -1;
+	}
+
+	/** extracting the second string from line **/
+	count = 0;
+	i++; //the previous character '=' isn't part of the value
+	while (line[i] == ' ')
+		i++;
+	while (line[i] != '\n' || line[i] != EOF || line[i] != ' ') {
+		value[count] = line[i];
+		count++;
+	}
+	value[count] = '\0';
+
+	while (line[i] != '\n' || line[i] != EOF) {
+		if (line[i] != ' ') {
+			*msg = SP_CONFIG_INVALID_STRING;
+			return -1;
+		}
+		value[count] = line[i];
+		count++;
+	}
+	return fieldId;
 }
+
 
 void printError(const char* filename, int lineNumber, char* msg) {
 	sprintf("File: %s\nLine: %d\nMessage: %s\n", filename, lineNumber, msg);
