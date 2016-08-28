@@ -4,7 +4,6 @@ spNumOfImages = 10
 spPCADimension = 40
 spPCADimension = 6
 spPCADimension = 15
-spPCAFilename = fileName
 spNumOfFeatures =   13
 spNumOfFeatures = 9.0
 spNumOfFeatures = ab5
