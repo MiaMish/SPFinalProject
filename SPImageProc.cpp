@@ -214,7 +214,7 @@ void sp::ImageProc::showImage(const char* imgPath) {
 			__LINE__);
 			return;
 		}
-		imshow(windowName, img);
+		//imshow(windowName, img);
 		waitKey(0);
 		destroyAllWindows();
 	} else {

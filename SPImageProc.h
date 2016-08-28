@@ -16,7 +16,7 @@ namespace sp {
  */
 class ImageProc {
 private:
-	const char* windowName = "Software Project CBIR";
+	//const char* windowName = "Software Project CBIR";
 	int pcaDim;
 	int numOfImages;
 	int numOfFeatures;

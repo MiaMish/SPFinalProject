@@ -5,10 +5,19 @@
 #include <ctype.h>
 #include <string.h>
 
-
 #include "SPConfig.h"
+#include "SPConfigUtils.h"
 #include "SPLogger.h"
-#include "./unit_tests/unit_test_util.h"
+
+/** the options for the cut method when the kd-tree is build **/
+typedef enum sp_methods {
+	RANDOM = 0, MAX_SPREAD = 1, INCREMENTAL = 2
+} SplitMethod;
+
+/** the options for the image suffix **/
+typedef enum imageTypes {
+	jpg, png, bmp, gif
+} ImageType;
 
 /** default values for configuration **/
 #define MAX_SIZE 1024
@@ -20,6 +29,8 @@
 #define spLoggerLevelDefault 3
 #define spLoggerFilenameDefault "stdout"
 #define spKDTreeSplitMethodDefault MAX_SPREAD
+
+
 
 /**the range of spPCADimension **/
 #define PCADimUpperBound 28
@@ -61,33 +72,12 @@ struct sp_config_t{
 	char* spLoggerFilename;
 };
 
+
 /*
  * @param config - pointer to an uninitialized SPConfig
  * puts default values in config
  */
-void initConfuguration(SPConfig config);
-
-/*
- * if str is not a decimal number, returns -1
- * else returns an integer representing str
- */
-int convertStringToNum(char str[]);
-
-/*
- * each field name is assigned an integer
- * if field isn't one of the fields of SPConfig than returns -1
- */
-int convertFieldToNum(char* field);
-
-/* @param method
- * @returns method as string
- */
-char* convertMethodToString(Method method);
-
-/* @param type
- * @returns type as string
- */
-char* convertTypeToString(Types type);
+void initConfiguration(SPConfig config);
 
 /*
  * recieves a  string and tries to split it into field and value
@@ -98,19 +88,6 @@ char* convertTypeToString(Types type);
  */
 void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg);
 
-/*
- * @assert msg != NULL
- * @returns true if config != NULL
- * and false otherwise
- */
-bool getterAssert(const SPConfig config, SP_CONFIG_MSG* msg);
-
-/*
- * @param filename - the name of the configuration file
- * @param lineNumber >= 0 - the line in the configuration file where error occured
- * @param msg - string with the massage to be printed
- */
-void printError(char* filename, int lineNumber, char* msg);
 
 
 SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
@@ -132,8 +109,8 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 		return config;
 	}
 
-	config = (SPConfig*) malloc(sizeof(SPConfig));
-	if(config == NULL) {
+	config = (SPConfig) malloc(sizeof(struct sp_config_t));
+	if (config == NULL) {
 		*msg = SP_CONFIG_ALLOC_FAIL;
 		free(config);
 		config = NULL;
@@ -141,25 +118,26 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 	}
 	initConfiguration(config);
 
-	if(*msg != SP_CONFIG_SUCCESS) {
+	if (*msg != SP_CONFIG_SUCCESS) {
 		free(config);
 		config = NULL;
 		return config;
 	}
 
-	while(fgets(line, MAX_SIZE, file)) {
+	while (fgets(line, MAX_SIZE, file)) {
 		lineCounter++;
 		parseConfigLine(line, config, msg);
-		if(*msg != SP_CONFIG_SUCCESS) {
+		if (*msg != SP_CONFIG_SUCCESS) {
 			fclose(file);
-			if(*msg == SP_CONFIG_INVALID_LINE) {
+			if (*msg == SP_CONFIG_INVALID_LINE) {
 				printError(filename, lineCounter, invalidLine);
-			} else if (*msg == SP_CONFIG_INVALID_INTEGER ||
-					*msg == SP_CONFIG_INVALID_STRING ||
-					*msg == SP_CONFIG_INVALID_BOOLEAN) {
+			} else if (*msg == SP_CONFIG_INVALID_INTEGER
+					|| *msg == SP_CONFIG_INVALID_STRING
+					|| *msg == SP_CONFIG_INVALID_BOOLEAN) {
 				printError(filename, lineCounter, invalidValue);
 			} else {
-				printError(filename, lineCounter, "Some error I didn't think about");
+				printError(filename, lineCounter,
+						"Some error I didn't think about");
 			}
 
 			spConfigDestroy(config);
@@ -170,7 +148,7 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 
 	fclose(file);
 
-	if(config->spImagesDirectory == NULL) {
+	if (config->spImagesDirectory == NULL) {
 		*msg = SP_CONFIG_MISSING_DIR;
 		printError(filename, lineCounter, directoryNotSet);
 	} else if (config->spImagesPrefix == NULL) {
@@ -192,12 +170,12 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 	}
 
 	logMsg = spLoggerCreate(config->spLoggerFilename, config->spLoggerLevel);
-	if(logMsg == SP_LOGGER_OUT_OF_MEMORY) {
+	if (logMsg == SP_LOGGER_OUT_OF_MEMORY) {
 		spConfigDestroy(config);
 		config = NULL;
 		*msg = SP_CONFIG_ALLOC_FAIL;
 	}
-	if(logMsg == SP_LOGGER_CANNOT_OPEN_FILE) {
+	if (logMsg == SP_LOGGER_CANNOT_OPEN_FILE) {
 		spConfigDestroy(config);
 		config = NULL;
 		*msg = SP_CONFIG_CANNOT_OPEN_FILE;
@@ -244,33 +222,35 @@ int spConfigGetPCADim(const SPConfig config, SP_CONFIG_MSG* msg) {
 SP_CONFIG_MSG spConfigGetImagePath(char* imagePath, const SPConfig config,
 		int index) {
 
-	int pathLength;
-	if(imagePath == NULL || config == NULL) {
+	if (imagePath == NULL || config == NULL) {
 		return SP_CONFIG_INVALID_ARGUMENT;
 	}
 
-	if(index >= config->spNumOfImages || index < 1) {
+	if (index >= config->spNumOfImages || index < 1) {
 		return SP_CONFIG_INDEX_OUT_OF_RANGE;
 	}
-	pathLength = sprintf(imagePath, "%s%s%d%s\n", config->spImagesDirectory,
+	/*
+	int pathLength = sprintf(imagePath, "%s%s%d%s\n", config->spImagesDirectory,
 			config->spImagesPrefix, index, config->spImagesSuffix);
-	/*if (pathLength < 1) {
-		return SOME_ERROR_MASSAGE
-	} */
+	if (pathLength < 1) {
+		return SOME_ERROR_MASSAGE;
+	}
+	*/
 	return SP_CONFIG_SUCCESS;
 }
 
 SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config) {
-	int pathLength;
-	if(pcaPath == NULL || config == NULL) {
+	if (pcaPath == NULL || config == NULL) {
 		return SP_CONFIG_INVALID_ARGUMENT;
 	}
 
-	pathLength = sprintf(pcaPath, "%s%s\n", config->spImagesDirectory,
+	/*
+	int pathLength = sprintf(pcaPath, "%s%s\n", config->spImagesDirectory,
 			config->spPCAFilename);
-	/*if (pathLength < 1) {
-		return SOME_ERROR_MASSAGE
-	} */
+	if (pathLength < 1) {
+		return SOME_ERROR_MASSAGE;
+	}
+	*/
 	return SP_CONFIG_SUCCESS;
 }
 
@@ -284,6 +264,11 @@ void spConfigDestroy(SPConfig config) {
 	}
 }
 
+
+/*
+ * Helper functions
+ */
+
 void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 	char field[MAX_SIZE];
 	char value[MAX_SIZE];
@@ -292,7 +277,8 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 	int fieldId;
 	int valueAsNum;
 
-	while(line[i] == ' ') i++;
+	while (line[i] == ' ')
+		i++;
 
 	/*
 	 * comment lines or empty lines are allowed
@@ -303,14 +289,14 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 	}
 
 	/** extracting the first string from line **/
-	while(line[i] != '\n' || line[i] != EOF || line[i] != ' ' || line[i] != '=') {
+	while (line[i] != '\n' || line[i] != EOF || line[i] != ' ' || line[i] != '=') {
 		field[count] = line[i];
 		count++;
 	}
 	value[count] = '\0';
 
 	fieldId = convertFieldToNum(field);
-	if(line[i] != '=' || fieldId == -1) {
+	if (line[i] != '=' || fieldId == -1) {
 		*msg = SP_CONFIG_INVALID_LINE;
 		return;
 	}
@@ -318,15 +304,16 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 	/** extracting the second string from line **/
 	count = 0;
 	i++; //the previous character '=' isn't part of the value
-	while(line[i] == ' ') i++;
-	while(line[i] != '\n' || line[i] != EOF || line[i] != ' ') {
+	while (line[i] == ' ')
+		i++;
+	while (line[i] != '\n' || line[i] != EOF || line[i] != ' ') {
 		value[count] = line[i];
 		count++;
 	}
 	value[count] = '\0';
 
-	while(line[i] != '\n' || line[i] != EOF) {
-		if(line[i] != ' ') {
+	while (line[i] != '\n' || line[i] != EOF) {
+		if (line[i] != ' ') {
 			*msg = SP_CONFIG_INVALID_STRING;
 			return;
 		}
@@ -338,9 +325,9 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 	 * if field is of type int, first we'll make sure the value is positive
 	 */
 	valueAsNum = convertStringToNum(value);
-	if (fieldId == 4 || fieldId == 5 || fieldId == 7 || fieldId == 9 ||
-			fieldId == 11 || fieldId == 13) {
-		if(valueAsNum < 0) {
+	if (fieldId == 4 || fieldId == 5 || fieldId == 7 || fieldId == 9
+			|| fieldId == 11 || fieldId == 13) {
+		if (valueAsNum < 0) {
 			*msg = SP_CONFIG_INVALID_INTEGER;
 			return;
 		}
@@ -356,10 +343,11 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 		break;
 
 	case 3:
-		if(value[0] == '.') {
-			for (i = 0; i < (sizeof(Types)/sizeof(Types*)); i++) {
-				if (strcmp(value[1], convertTypeToString(Types[i])) == 0) {
-					config->spImagesSuffix = Types[i];
+		if (value[0] == '.') {
+			for (i = 0; i < (sizeof(ImageType) / sizeof(ImageType*)); i++) {
+				const char* typeString = convertTypeToString((ImageType) i);
+				if (strcmp(value, typeString) == 0) {
+					config->spImagesSuffix = (char*) typeString;
 				}
 			}
 		} else {
@@ -391,7 +379,7 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 	case 8:
 		if (strcmp(value, "true") == 0) {
 			config->spExtractionMode = true;
-		} else if(strcmp(value, "false") == 0) {
+		} else if (strcmp(value, "false") == 0) {
 			config->spExtractionMode = false;
 		} else {
 			*msg = SP_CONFIG_INVALID_BOOLEAN;
@@ -404,25 +392,24 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 		break;
 
 	case 10:
-		for (i = 0; i < (sizeof(Method)/sizeof(Method*)); i++) {
-			if (strcmp(value, convertMethodToString((Method[i]))) == 0) {
-				config->spKDTreeSplitMethod = Method[i];
+		for (i = 0; i < (sizeof(SplitMethod) / sizeof(SplitMethod*)); i++) {
+			if (strcmp(value, convertMethodToString(((SplitMethod) i))) == 0) {
+				config->spKDTreeSplitMethod = (SplitMethod) i;
+			} else {
+				*msg = SP_CONFIG_INVALID_STRING;
+				return;
 			}
-		}
-		if (strcmp(config->spKDTreeSplitMethod, value) == 0) {
-			*msg = SP_CONFIG_INVALID_STRING;
-			return;
 		}
 		break;
 
 	case 11:
-			config->spKNN = valueAsNum;
-			break;
+		config->spKNN = valueAsNum;
+		break;
 
 	case 12:
 		if (strcmp(value, "true") == 0) {
 			config->spMinimalGUI = true;
-		} else if ( strcmp(value, "false") == 0) {
+		} else if (strcmp(value, "false") == 0) {
 			config->spMinimalGUI = false;
 		} else {
 			*msg = SP_CONFIG_INVALID_BOOLEAN;
@@ -450,6 +437,7 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 	*msg = SP_CONFIG_SUCCESS;
 }
 
+
 void initConfuguration(SPConfig config) {
 	config->spPCADimension = spPCADimensionDefault;
 	config->spPCAFilename = spPCAFilenameDefault;
@@ -468,83 +456,4 @@ void initConfuguration(SPConfig config) {
 	config->spNumOfImages = -1;
 }
 
-int convertFieldToNum(char* field) {
-	if(strcmp(field, "spImagesDirectory") == 0) return 1;
-	if(strcmp(field, "spImagesPrefix") == 0) return 2;
-	if(strcmp(field, "spImagesSuffix") == 0) return 3;
-	if(strcmp(field, "spNumOfImages") == 0) return 4;
-	if(strcmp(field, "spPCADimension") == 0) return 5;
-	if(strcmp(field, "spPCAFilename") == 0) return 6;
-	if(strcmp(field, "spNumOfFeatures") == 0) return 7;
-	if(strcmp(field, "spExtractionMode") == 0) return 8;
-	if(strcmp(field, "spNumOfSimilarImages") == 0) return 9;
-	if(strcmp(field, "spKDTreeSplitMethod") == 0) return 10;
-	if(strcmp(field, "spKNN") == 0) return 11;
-	if(strcmp(field, "spMinimalGUI") == 0) return 12;
-	if(strcmp(field, "spLoggerLevel") == 0) return 13;
-	if(strcmp(field, "spLoggerFilename") == 0) return 14;
-	return -1;
-}
-
-int convertStringToNum(char str[]) {
-	int i = 0;
-	while(str[i] != '\n' || str[i] != EOF) {
-		if (!isdigit(str[i])) {
-			if (i != 0 || str[i] != '+') { //+int is allowed
-				return -1;
-			}
-		}
-		i++;
-	}
-	if(i == 0) {
-		return -1;
-	}
-	return atoi(str);
-}
-
-char* convertMethodToString(Method method) {
-	switch(method) {
-	case 0:
-		return "RANDOM";
-	case 1:
-		return "MAX_SPREAD";
-	case 2:
-		return "INCREMENTAL";
-	}
-
-	/*shouldn't get to this line */
-	return NULL;
-}
-
-char* convertTypeToString(Types type) {
-	switch(type) {
-	case 0:
-		return "jpg";
-	case 1:
-		return "png";
-	case 2:
-		return "bmp";
-	case 3:
-		return "gif";
-	}
-
-	/*shouldn't reach this line */
-	return NULL;
-}
-
-bool getterAssert(const SPConfig config, SP_CONFIG_MSG* msg) {
-	assert(msg != NULL);
-
-	if (config == NULL) {
-		*msg = SP_CONFIG_INVALID_ARGUMENT;
-		return false;
-	}
-
-	*msg = SP_CONFIG_SUCCESS;
-	return true;
-}
-
-void printError(char* filename, int lineNumber, char* msg) {
-	sprintf("File: %s\nLine: %d\nMessage: %s\n", filename, lineNumber, msg);
-}
 

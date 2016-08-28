@@ -5,14 +5,14 @@
  *      Author: user
  */
 
-#include "stdio.h"
+#include <stdio.h>
+#include <stdbool.h>
+#include <assert.h>
+#include <limits.h>
 #include <stdlib.h>
-#include "stdbool.h"
-#include "assert.h"
-#include "limits.h"
 #include "SPKDArray.h"
 
-#define NULL_CHECK(val,kdArr) if (val == NULL) { Destroy(kdArr); return NULL; }
+#define NULL_CHECK(val,kdArr) if (val == NULL) { spKDArrayDestroy(kdArr); return NULL; }
 
 void fillIndices(SPKDArray* kdArr, int coor);
 void sortIndices(SPKDArray* kdArr, int coor);
@@ -28,6 +28,7 @@ SPKDArray* InitBasic(SPPoint* arr, int size, int dim) {
 	SPKDArray* kdArr = (SPKDArray*) malloc(sizeof(SPKDArray));
 	NULL_CHECK(kdArr, kdArr);
 
+	kdArr->pointsCount = size;
 	kdArr->points = (SPPoint*) malloc(sizeof(SPPoint) * size);
 	NULL_CHECK(kdArr->points, kdArr);
 
@@ -50,7 +51,7 @@ SPKDArray* InitBasic(SPPoint* arr, int size, int dim) {
 	return kdArr;
 }
 
-SPKDArray* SPKDArrayInit(SPPoint* arr, int size, int dim) {
+SPKDArray* spKDArrayInit(SPPoint* arr, int size, int dim) {
 	SPKDArray* kdArr = InitBasic(arr, size, dim);
 	if (kdArr == NULL) {
 		return NULL;
@@ -64,7 +65,7 @@ SPKDArray* SPKDArrayInit(SPPoint* arr, int size, int dim) {
 	return kdArr;
 }
 
-void SPKDArrayDestroy(SPKDArray* kdArr) {
+void spKDArrayDestroy(SPKDArray* kdArr) {
 	if (kdArr == NULL) {
 		return;
 	}
@@ -95,9 +96,9 @@ static SPKDArray* currentKdArr = NULL;
 
 static int currentAxis = -1;
 
-int pointsComparator(void* ptr1, void* ptr2) {
-	int index1 = *(int*) ptr1;
-	int index2 = *(int*) ptr2;
+int pointsComparator(const void* ptr1, const void* ptr2) {
+	int index1 = *(const int*) ptr1;
+	int index2 = *(const int*) ptr2;
 
 	double coor1 = spPointGetAxisCoor(currentKdArr->points[index1],
 			currentAxis);
@@ -110,7 +111,7 @@ int pointsComparator(void* ptr1, void* ptr2) {
 void sortIndices(SPKDArray* kdArr, int axis) {
 	currentKdArr = kdArr;
 	currentAxis = axis;
-	qsort(kdArr->sortedIndices[axis], kdArr->pointsCount,sizeof(kdArr->sortedIndices[0]), pointsComparator);
+	qsort(kdArr->sortedIndices[axis], kdArr->pointsCount, sizeof(int), pointsComparator);
 }
 
 #define SPLIT_CLEANUP(leftMap, rightMap, leftPoints, rightPoints, leftTree, rightTree)   \
@@ -118,10 +119,10 @@ void sortIndices(SPKDArray* kdArr, int axis) {
 	free(rightMap);   \
 	free(leftPoints);   \
 	free(rightPoints);   \
-	Destroy(leftTree);   \
-	Destroy(rightTree)
+	spKDArrayDestroy(leftTree);   \
+	spKDArrayDestroy(rightTree)
 
-void SPKDArraySplit(SPKDArray* kdArr, int coor, SPKDArray** kdLeft, SPKDArray** kdRight) {
+void spKDArraySplit(SPKDArray* kdArr, int coor, SPKDArray** kdLeft, SPKDArray** kdRight) {
 	*kdLeft = NULL;
 	*kdRight = NULL;
 
@@ -164,11 +165,11 @@ void SPKDArraySplit(SPKDArray* kdArr, int coor, SPKDArray** kdLeft, SPKDArray** 
 		for (int j = 0; j<kdArr->dim; j++) {
 			int currIndex = kdArr->sortedIndices[i][j];
 			if (leftMap[currIndex]) {
-				*kdLeft->sortedIndices[i][leftSpot] = currIndex;
+				(*kdLeft)->sortedIndices[i][leftSpot] = currIndex;
 				leftSpot++;
 			}
 			else if (rightMap[currIndex]) {
-				*kdRight->sortedIndices[i][rightSpot] = currIndex;
+				(*kdRight)->sortedIndices[i][rightSpot] = currIndex;
 				rightSpot++;
 			}
 			else {
@@ -182,19 +183,24 @@ void SPKDArraySplit(SPKDArray* kdArr, int coor, SPKDArray** kdLeft, SPKDArray** 
 	SPLIT_CLEANUP(leftMap, rightMap, leftPoints, rightPoints, NULL, NULL);
 }
 
-int SPKDArrayGetPointsCount(SPKDArray* kdArr) {
+int spKDArrayGetPointsCount(SPKDArray* kdArr) {
 	return kdArr->pointsCount;
 }
 
-SPPoint SPKDArrayGetPointAt(SPKDArray* kdArr, int i) {
+SPPoint spKDArrayGetPointAt(SPKDArray* kdArr, int i) {
 	return kdArr->points[i];
 }
 
-int SPKDArrayGetDimension(SPKDArray* kdArr) {
+double spKDArrayGetPointVal(SPKDArray* kdArr, int dim, int i) {
+	int index = kdArr->sortedIndices[dim][i];
+	return spPointGetAxisCoor(kdArr->points[index], dim);
+}
+
+int spKDArrayGetDimension(SPKDArray* kdArr) {
 	return kdArr->dim;
 }
 
-int SPKDArrayFindMaxSpreadDimension(SPKDArray* kdArr) {
+int spKDArrayFindMaxSpreadDimension(SPKDArray* kdArr) {
 	int maxSpread = INT_MIN;
 	int maxSpreadDim = -1;
 
@@ -221,8 +227,8 @@ int SPKDArrayFindMaxSpreadDimension(SPKDArray* kdArr) {
 	return maxSpreadDim;
 }
 
-double SPKDArrayGetMedian(SPKDArray* kdArr, int axis) {
-	int meanIndex = kdArr->sortedIndices[axis][(kdArr->points + 1) / 2];
+double spKDArrayGetMedian(SPKDArray* kdArr, int axis) {
+	int meanIndex = kdArr->sortedIndices[axis][(kdArr->pointsCount - 1) / 2];
 	SPPoint meanPoint = kdArr->points[meanIndex];
 	return spPointGetAxisCoor(meanPoint, axis);
 }
