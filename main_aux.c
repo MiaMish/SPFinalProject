@@ -17,11 +17,12 @@
  * @param imFeatures - the features extracted from the index-th image in te directory
  * @param numOfFeats - the number of elements in imFeatures
  *
- * creats features file for the index-th image in directory
+ * Creates features file for the index-th image in directory
  *
- * @returns SP_CONFIG_UNKNOWN_ERROR if fopens or sprintf fails
- * @returns SP_CONFIG_INVALID_ARGUMENT - if config == NULL
- * @returns SP_CONFIG_SUCCESS if successful
+ * @return SP_CONFIG_UNKNOWN_ERROR if fopens or sprintf fails
+ * @return SP_CONFIG_INVALID_ARGUMENT - if config == NULL
+ * @return SP_CONFIG_ALLOC_FAIL - if some allocation failed
+ * @return SP_CONFIG_SUCCESS if successful
  */
 SP_CONFIG_MSG* createFeaturesFile(SPPoint* imFeatures, SP_CONFIG_MSG* msg,
 		int* numOfFeats, SPConfig config, int index) {
@@ -31,14 +32,20 @@ SP_CONFIG_MSG* createFeaturesFile(SPPoint* imFeatures, SP_CONFIG_MSG* msg,
 	char* line;
 	int sprintfRes;
 
-	msg = spConfigGetImageFeatsPath(featsPath, config, index);
-	if (msg != SP_CONFIG_SUCCESS) {
+	*msg = spConfigGetImageFeatsPath(featsPath, config, index);
+	if (*msg != SP_CONFIG_SUCCESS) {
 		return msg;
 	}
 
 	featsFile = fopen(featsPath, "w");
 	if (featsFile == NULL) {
-		msg = SP_CONFIG_UNKNOWN_ERROR;
+		*msg = SP_CONFIG_UNKNOWN_ERROR;
+		return msg;
+	}
+
+	line = (char*) malloc(sizeof(*line));
+	if (line == NULL) {
+		*msg = SP_CONFIG_ALLOC_FAIL;
 		return msg;
 	}
 
@@ -46,12 +53,13 @@ SP_CONFIG_MSG* createFeaturesFile(SPPoint* imFeatures, SP_CONFIG_MSG* msg,
 			index, numOfFeats);
 	if (sprintfRes < 0) {
 		//sprintf failed
-		msg = SP_CONFIG_UNKNOWN_ERROR;
+		*msg = SP_CONFIG_UNKNOWN_ERROR;
 		return msg;
 	}
 
 	//TODO Dear Mia, please write features to file
 
+	free(line);
 	free(featsPath);
 	fclose(featsFile);
 	return msg;
@@ -62,10 +70,10 @@ SP_CONFIG_MSG* createFeaturesFile(SPPoint* imFeatures, SP_CONFIG_MSG* msg,
  * @param msg - a pointer
  * @param numOfImages - the number of images in directory
  *
- * @returns false if there exists an image in directory whose feats file
+ * @return false if there exists an image in directory whose feats file
  * doesn't exists or whose feats file contains more features than allowed
  * according to the configuration
- * @returns true otherwise
+ * @return true otherwise
  */
 bool nonExtractionModeLegal(SPConfig config, SP_CONFIG_MSG* msg,
 		int numOfImages) {
@@ -77,15 +85,21 @@ bool nonExtractionModeLegal(SPConfig config, SP_CONFIG_MSG* msg,
 	int* fileNumOfFeatures;
 	int maxNumOfFeatures;
 
+	line = (char*) malloc(sizeof(*line));
+	if (line == NULL) {
+		*msg = SP_CONFIG_ALLOC_FAIL;
+		return false;
+	}
+
 	for(int i = 1; i <= numOfImages; i++) {
-		msg = spConfigGetImageFeatsPath(featsPath, config, i);
+		*msg = spConfigGetImageFeatsPath(featsPath, config, i);
 		featsFile = fopen(featsPath, "r");
 		if (featsFile == NULL) {
-			msg = SP_CONFIG_UNKNOWN_ERROR;
+			*msg = SP_CONFIG_UNKNOWN_ERROR;
 			return false;
 		}
 		if (fgets(line, 1024, featsFile) == NULL) {
-			msg = SP_CONFIG_UNKNOWN_ERROR;
+			*msg = SP_CONFIG_UNKNOWN_ERROR;
 			fclose(featsFile);
 			return false;
 		}
@@ -96,8 +110,8 @@ bool nonExtractionModeLegal(SPConfig config, SP_CONFIG_MSG* msg,
 
 		maxNumOfFeatures = spConfigGetNumOfFeatures(config, msg);
 
-		if(fileIndex != i || maxNumOfFeatures < fileNumOfFeatures) {
-			msg = SP_CONFIG_UNKNOWN_ERROR;
+		if(*fileIndex != i || maxNumOfFeatures < *fileNumOfFeatures) {
+			*msg = SP_CONFIG_UNKNOWN_ERROR;
 			fclose(featsFile);
 			return false;
 		}

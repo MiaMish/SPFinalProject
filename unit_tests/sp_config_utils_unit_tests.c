@@ -70,7 +70,6 @@ bool fieldToNumTest() {
 int main_test() {
 	RUN_TEST(stringToIntTest);
 	RUN_TEST(fieldToNumTest);
-	RUN_TEST(initConfigurationTest);
 
 	return 1;
 }

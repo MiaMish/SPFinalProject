@@ -4,6 +4,7 @@
 
 #include <cstdlib> //include c library
 #include <stdio.h>
+#include <string.h>
 #include "SPImageProc.h"
 
 extern "C"{
@@ -31,7 +32,7 @@ int main(int argc, char* argv[]) {
 		printf("Invalid command line : use -c <config_filename>\n");
 	}
 	/* not sure if we really need to check that case */
-	if(strcmp(argv[0], ".\SPFinalProject") != 0) {
+	if(strcmp(argv[0], ".\\SPFinalProject") != 0) {
 		printf("Invalid command line : use -c <config_filename>\n");
 	}
 
@@ -47,20 +48,20 @@ int main(int argc, char* argv[]) {
 
 	config = spConfigCreate(filename, msg);
 
-	if(msg == SP_CONFIG_CANNOT_OPEN_FILE) {
+	if(*msg == SP_CONFIG_CANNOT_OPEN_FILE) {
 		if(strcmp(filename, "spcbir.config") == 0) {
 			printf("The default configuration file spcbir.config couldn’t be open\n");
 		} else {
 			printf("The configuration file <filename> couldn’t be open\n");
 		}
 		return terminate(config, msg);;
-	} else if (msg != SP_CONFIG_SUCCESS) {
+	} else if (*msg != SP_CONFIG_SUCCESS) {
 		return terminate(config, msg);
 	}
 
 	numOfFeats = (int*)malloc(sizeof(int));
 	if (numOfFeats == NULL) {
-		msg = SP_CONFIG_ALLOC_FAIL;
+		*msg = SP_CONFIG_ALLOC_FAIL;
 		return terminate(config, msg);
 	}
 
@@ -69,8 +70,8 @@ int main(int argc, char* argv[]) {
 
 	if (spConfigIsExtractionMode(config, msg)) {
 		for (i = 1; i <= numOfImages; i++) {
-			msg = spConfigGetImagePath(imagePath, config, i);
-			if (msg != SP_CONFIG_SUCCESS) {
+			*msg = spConfigGetImagePath(imagePath, config, i);
+			if (*msg != SP_CONFIG_SUCCESS) {
 				free(numOfFeats);
 				return terminate(config, msg);
 			}
@@ -94,6 +95,7 @@ int main(int argc, char* argv[]) {
 	printf("Please enter an image path:\n");
 	while (gets(query) != NULL && strcmp(query, "<>") != 0) {
 
+		//TODO now we need to sort!
 		/*
 		 * 1 - store all features in KD-Tree
 		 * 2 - for each feature of query image, find the k-nearest features
