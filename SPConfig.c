@@ -197,35 +197,35 @@ bool spConfigIsExtractionMode(const SPConfig config, SP_CONFIG_MSG* msg) {
 }
 
 bool spConfigMinimalGui(const SPConfig config, SP_CONFIG_MSG* msg) {
-	if (!getterAssert(config, msg)) {
+	if (!getterAssert(config, msg, __func__)) {
 		return false;
 	}
 	return (config->spMinimalGUI == true);
 }
 
 int spConfigGetNumOfImages(const SPConfig config, SP_CONFIG_MSG* msg) {
-	if (!getterAssert(config, msg)) {
+	if (!getterAssert(config, msg, __func__)) {
 		return -1;
 	}
 	return config->spNumOfImages;
 }
 
 int spConfigGetNumOfFeatures(const SPConfig config, SP_CONFIG_MSG* msg) {
-	if (!getterAssert(config, msg)) {
+	if (!getterAssert(config, msg, __func__)) {
 		return -1;
 	}
 	return config->spNumOfFeatures;
 }
 
 int spConfigGetPCADim(const SPConfig config, SP_CONFIG_MSG* msg) {
-	if (!getterAssert(config, msg)) {
+	if (!getterAssert(config, msg, __func__)) {
 		return -1;
 	}
 	return config->spPCADimension;
 }
 
 int spConfigGetNumOfSimIms(const SPConfig config, SP_CONFIG_MSG* msg) {
-	if (!getterAssert(config, msg)) {
+	if (!getterAssert(config, msg, __func__)) {
 		return -1;
 	}
 	return config->spNumOfSimilarImages;
@@ -234,19 +234,23 @@ int spConfigGetNumOfSimIms(const SPConfig config, SP_CONFIG_MSG* msg) {
 SP_CONFIG_MSG spConfigGetImagePath(char* imagePath, const SPConfig config,
 		int index) {
 
-	return createFilePath(imagePath, config, index, config->spImagesSuffix);
+	return createFilePath(imagePath, config, index,
+			config->spImagesSuffix, __func__);
 }
 
 SP_CONFIG_MSG spConfigGetImageFeatsPath(char* imagePath, const SPConfig config,
 		int index) {
 
-	return createFilePath(imagePath, config, index, spFeatsSuffix);
+	return createFilePath(imagePath, config, index, spFeatsSuffix, __func__);
 }
 
 SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config) {
 	int pathLength;
+	char* errMsg;
 
 	if (pcaPath == NULL || config == NULL) {
+		errMsg = sprintf("The function was called with an invalid argument");
+		spLoggerPrintError(errMsg, __FILE__, __func__, __LINE__);
 		return SP_CONFIG_INVALID_ARGUMENT;
 	}
 
@@ -256,6 +260,8 @@ SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config) {
 	pathLength = sprintf(pcaPath, "%s%s\n", config->spImagesDirectory,
 			config->spPCAFilename);
 	if (pathLength < 1) {
+		errMsg = sprintf("sprintf function has failed");
+		spLoggerPrintError(errMsg, __FILE__, __func__, __LINE__);
 		return SP_CONFIG_UNKNOWN_ERROR;
 	}
 
@@ -263,21 +269,21 @@ SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config) {
 }
 
 char* spConfigGetDirectory(const SPConfig config, SP_CONFIG_MSG* msg) {
-	if (!getterAssert(config, msg)) {
+	if (!getterAssert(config, msg, __func__)) {
 		return NULL;
 	}
 	return config->spImagesDirectory;
 }
 
 char* spConfigGetPrefix(const SPConfig config, SP_CONFIG_MSG* msg) {
-	if (!getterAssert(config, msg)) {
+	if (!getterAssert(config, msg, __func__)) {
 		return NULL;
 	}
 	return config->spImagesPrefix;
 }
 
 char* spConfigGetSuffix(const SPConfig config, SP_CONFIG_MSG* msg) {
-	if (!getterAssert(config, msg)) {
+	if (!getterAssert(config, msg, __func__)) {
 		return NULL;
 	}
 	return config->spImagesSuffix;
@@ -447,15 +453,22 @@ void initConfuguration(SPConfig config) {
 }
 
 SP_CONFIG_MSG createFilePath(char* imagePath, const SPConfig config,
-		int index, char* suffix) {
+		int index, char* suffix, char* func) {
 
 	int pathLen;
+	char* errMsg;
 
 	if (imagePath == NULL || config == NULL) {
+		errMsg = sprintf("The function %s was called with an invalid argument",
+			func);
+		spLoggerPrintError(errMsg, __FILE__, __func__, __LINE__);
 		return SP_CONFIG_INVALID_ARGUMENT;
 	}
 
 	if (index >= config->spNumOfImages || index < 1) {
+		errMsg = sprintf("The index given to %s is out of range",
+			func);
+		spLoggerPrintError(errMsg, __FILE__, __func__, __LINE__);
 		return SP_CONFIG_INDEX_OUT_OF_RANGE;
 	}
 
@@ -465,17 +478,23 @@ SP_CONFIG_MSG createFilePath(char* imagePath, const SPConfig config,
 	pathLen = sprintf(imagePath, "%s%s%d%s\n", config->spImagesDirectory,
 			config->spImagesPrefix, index, suffix);
 	if (pathLen < 1) {
+		errMsg = sprintf("sprintf function has failed");
+		spLoggerPrintError(errMsg, __FILE__, __func__, __LINE__);
 		return SP_CONFIG_UNKNOWN_ERROR;
 	}
 
 	return SP_CONFIG_SUCCESS;
 }
 
-bool getterAssert(const SPConfig config, SP_CONFIG_MSG* msg) {
+bool getterAssert(const SPConfig config, SP_CONFIG_MSG* msg, char* func) {
+	char* errMsg = sprintf("The function %s was called with an invalid argument",
+			func);
+
 	assert(msg != NULL);
 
 	if (config == NULL) {
 		*msg = SP_CONFIG_INVALID_ARGUMENT;
+		spLoggerPrintError(errMsg, __FILE__, __func__, __LINE__);
 		return false;
 	}
 

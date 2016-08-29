@@ -5,8 +5,6 @@
 #ifndef SPCONFIGUTILS_H_
 #define SPCONFIGUTILS_H_
 
-#include "SPConfig.h"
-
 #define MAX_SIZE 1024
 
 /** suffix for features file **/
@@ -46,7 +44,7 @@ const char* convertTypeToString(ImageType type);
 
 /*
  * recieves a  string and tries to split it into field and value
- * msg = SP_CONFIG_SUCCESS if managed to update a field in config
+ * msg = SP_CONFIG_SUCCESS if line is in correct format
  * msg = SP_CONFIG_INVALID_STRING if line is not in the correct format
  * msg = SP_CONFIG_INVALID_INTEGER if value is supposed to be an integer,
  * msg = SP_CONFIG_INVALID_LINE if field doesn't exist but is not one

@@ -66,10 +66,47 @@ bool fieldToNumTest() {
 	return true;
 }
 
+bool methodToStringTest() {
+	char* str1 = "RANDOM";
+	char* str2 = "MAX_SPREAD";
+	char* str3 = "INCREMENTAL";
+
+	char* res1 = convertMethodToString(RANDOM);
+	char* res2 = convertMethodToString(MAX_SPREAD);
+	char* res3 = convertMethodToString(INCREMENTAL);
+
+	ASSERT_TRUE(strcmp(str1, res1) == 0);
+	ASSERT_TRUE(strcmp(str2, res2) == 0);
+	ASSERT_TRUE(strcmp(str3, res3) == 0);
+
+	return true;
+}
+
+bool typeToStringTest() {
+	char* str1 = ".jpg";
+	char* str2 = ".png";
+	char* str3 = ".bmp";
+	char* str4 = ".gif";
+
+	char* res1 = convertTypeToString(jpg);
+	char* res2 = convertTypeToString(png);
+	char* res3 = convertTypeToString(bmp);
+	char* res4 = convertTypeToString(gif);
+
+	ASSERT_TRUE(strcmp(str1, res1) == 0);
+	ASSERT_TRUE(strcmp(str2, res2) == 0);
+	ASSERT_TRUE(strcmp(str3, res3) == 0);
+	ASSERT_TRUE(strcmp(str4, res4) == 0);
+
+	return true;
+}
+
 
 int main_test() {
 	RUN_TEST(stringToIntTest);
 	RUN_TEST(fieldToNumTest);
+	RUN_TEST(methodToStringTest);
+	RUN_TEST(typeToStringTest);
 
 	return 1;
 }
