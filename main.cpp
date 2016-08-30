@@ -19,6 +19,7 @@ int main(int argc, char* argv[]) {
 	char* filename = "spcbir.config"; //default name
 	FILE* file = NULL;
 	SP_CONFIG_MSG* msg = NULL;
+	SP_LOGGER_MSG* logMsg = NULL;
 	SPConfig config = NULL;
 	char* imagePath = NULL;
 	SPPoint* imFeatures = NULL;
@@ -41,6 +42,8 @@ int main(int argc, char* argv[]) {
 		filename = argv[1];
 	}
 
+	/** creating SPConfig **/
+
 	msg = (SP_CONFIG_MSG*) malloc(sizeof(SP_CONFIG_MSG));
 	if (msg == NULL) {
 		return terminate(config, msg);
@@ -59,9 +62,19 @@ int main(int argc, char* argv[]) {
 		return terminate(config, msg);
 	}
 
+	/** creating SPLogger **/
+
+	*logMsg = createLogger(config);
+	if (*logMsg != SP_LOGGER_SUCCESS) {
+		return terminate(config, msg);
+	}
+
+	/** extracting features from images or from feats file **/
+
 	numOfFeats = (int*)malloc(sizeof(int));
 	if (numOfFeats == NULL) {
 		*msg = SP_CONFIG_ALLOC_FAIL;
+		spLoggerPrintError(allocFail, __FILE__, __func__, __LINE__);
 		return terminate(config, msg);
 	}
 
@@ -72,11 +85,13 @@ int main(int argc, char* argv[]) {
 		for (i = 1; i <= numOfImages; i++) {
 			*msg = spConfigGetImagePath(imagePath, config, i);
 			if (*msg != SP_CONFIG_SUCCESS) {
+				spLoggerPrintError(imPathErr, __FILE__, __func__, __LINE__);
 				free(numOfFeats);
 				return terminate(config, msg);
 			}
 			imFeatures = getImageFeatures(imagePath, i, numOfFeats);
 			if (imFeatures == NULL) {
+				spLoggerPrintError(unknownErr, __FILE__, __func__, __LINE__);
 				free(numOfFeats);
 				return terminate(config, msg);
 			}
@@ -85,12 +100,14 @@ int main(int argc, char* argv[]) {
 			free(imFeatures);
 		}
 	} else if (!nonExtractionModeLegal(config, msg, numOfImages)) {
+		spLoggerPrintError(featsFileInvalid, __FILE__, __func__, __LINE__);
 		free(numOfFeats);
 		return terminate(config, msg);
 	}
 
 	free(numOfFeats);
 
+	/** for each query find and present nearest images according to features **/
 
 	printf("Please enter an image path:\n");
 	while (gets(query) != NULL && strcmp(query, "<>") != 0) {

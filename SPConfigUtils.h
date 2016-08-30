@@ -52,8 +52,8 @@ const char* convertTypeToString(ImageType type);
  * @return non-negative number if line is valid
  * @return -1 if line is not valid
  */
-int findFieldAndValue(char* line, SPConfig config, SP_CONFIG_MSG* msg,
-		char* field,char* value);
+int findFieldAndValue(char* line, SP_CONFIG_MSG* msg,
+		char* field, char* value);
 
 /*
  * @param filename - the name of the configuration file

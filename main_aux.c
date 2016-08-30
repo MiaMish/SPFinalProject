@@ -12,6 +12,48 @@
 #include "SPPoint.h"
 #include "SPConfig.h"
 #include "SPConfigUtils.c"
+#include "SPLogger.h"
+
+#define extMsg "Exiting…\n"
+
+/** error massages for logger **/
+#define featsPathErr "can't get path of feature file\n"
+#define featsFileErr "can't open features file\n"
+#define featsFileInvalid "the features file for one of the images is invalid\n"
+#define allocFail "memory allocation failure\n"
+#define imPathErr "can't get path of image\n"
+#define unknownErr "unknown error\n"
+
+
+/*
+ * creats logger according to information from config
+ *
+ * @para config
+ *
+ * @return SP_LOGGER_INVAlID_ARGUMENT - if config == NULL
+ * @return SP_LOGGER_DEFINED 			- The logger has been defined
+ * @return SP_LOGGER_OUT_OF_MEMORY 		- In case of memory allocation failure
+ * @return SP_LOGGER_CANNOT_OPEN_FILE 	- If the file given by filename cannot be opened
+ * @return SP_LOGGER_SUCCESS - if logger was created successfully
+ */
+SP_LOGGER_MSG createLogger(SPConfig config) {
+	char* filename;
+	int level;
+	SP_CONFIG_MSG msg = SP_CONFIG_SUCCESS;
+
+	level = spConfigGetLogLevel(config, &msg);
+	if (msg != SP_CONFIG_SUCCESS) {
+		return SP_LOGGER_INVAlID_ARGUMENT;
+	}
+
+	filename = spConfigGetLogName(config, &msg);
+	if (msg != SP_CONFIG_SUCCESS) {
+		return SP_LOGGER_INVAlID_ARGUMENT;
+	}
+
+	return spLoggerCreate(filename, (SP_LOGGER_LEVEL)level);
+}
+
 
 /*
  * @param imFeatures - the features extracted from the index-th image in te directory
@@ -34,18 +76,21 @@ SP_CONFIG_MSG* createFeaturesFile(SPPoint* imFeatures, SP_CONFIG_MSG* msg,
 
 	*msg = spConfigGetImageFeatsPath(featsPath, config, index);
 	if (*msg != SP_CONFIG_SUCCESS) {
+		spLoggerPrintError(featsPathErr, __FILE__, __func__, __LINE__);
 		return msg;
 	}
 
 	featsFile = fopen(featsPath, "w");
 	if (featsFile == NULL) {
 		*msg = SP_CONFIG_UNKNOWN_ERROR;
+		spLoggerPrintError(featsFileErr, __FILE__, __func__, __LINE__);
 		return msg;
 	}
 
 	line = (char*) malloc(sizeof(*line));
 	if (line == NULL) {
 		*msg = SP_CONFIG_ALLOC_FAIL;
+		spLoggerPrintError(unknownErr, __FILE__, __func__, __LINE__);
 		return msg;
 	}
 
@@ -54,6 +99,7 @@ SP_CONFIG_MSG* createFeaturesFile(SPPoint* imFeatures, SP_CONFIG_MSG* msg,
 	if (sprintfRes < 0) {
 		//sprintf failed
 		*msg = SP_CONFIG_UNKNOWN_ERROR;
+		spLoggerPrintError(unknownErr, __FILE__, __func__, __LINE__);
 		return msg;
 	}
 
@@ -88,6 +134,7 @@ bool nonExtractionModeLegal(SPConfig config, SP_CONFIG_MSG* msg,
 	line = (char*) malloc(sizeof(*line));
 	if (line == NULL) {
 		*msg = SP_CONFIG_ALLOC_FAIL;
+		spLoggerPrintError(unknownErr, __FILE__, __func__, __LINE__);
 		return false;
 	}
 
@@ -96,10 +143,12 @@ bool nonExtractionModeLegal(SPConfig config, SP_CONFIG_MSG* msg,
 		featsFile = fopen(featsPath, "r");
 		if (featsFile == NULL) {
 			*msg = SP_CONFIG_UNKNOWN_ERROR;
+			spLoggerPrintError(featsFileErr, __FILE__, __func__, __LINE__);
 			return false;
 		}
 		if (fgets(line, 1024, featsFile) == NULL) {
 			*msg = SP_CONFIG_UNKNOWN_ERROR;
+			spLoggerPrintError(featsFileErr, __FILE__, __func__, __LINE__);
 			fclose(featsFile);
 			return false;
 		}
@@ -112,6 +161,7 @@ bool nonExtractionModeLegal(SPConfig config, SP_CONFIG_MSG* msg,
 
 		if(*fileIndex != i || maxNumOfFeatures < *fileNumOfFeatures) {
 			*msg = SP_CONFIG_UNKNOWN_ERROR;
+			spLoggerPrintError(featsFileInvalid, __FILE__, __func__, __LINE__);
 			fclose(featsFile);
 			return false;
 		}
@@ -126,7 +176,7 @@ bool nonExtractionModeLegal(SPConfig config, SP_CONFIG_MSG* msg,
  * @return 1
  */
 int terminate(SPConfig config, SP_CONFIG_MSG* msg) {
-	printf("Exiting…\n");
+	printf(extMsg);
 
 	if (config != NULL) {
 		spConfigDestroy(config);
@@ -134,6 +184,7 @@ int terminate(SPConfig config, SP_CONFIG_MSG* msg) {
 	if (msg != NULL) {
 		free(msg);
 	}
+	spLoggerDestroy();
 	return 1;
 }
 

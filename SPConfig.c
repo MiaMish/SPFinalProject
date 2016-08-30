@@ -24,17 +24,23 @@
 #define PCADimLowerBound 10
 
 /**Error massages to be printed in case configuration create failed **/
-#define invalidLine "Invalid configuration line"
-#define invalidValue "Invalid value - constraint not met"
-#define directoryNotSet "Parameter spImagesDirectory is not set"
-#define preffixNotSet "Parameter spImagesPrefix is not set"
-#define suffixNotSet "Parameter spImagesSuffix is not set"
-#define imageNumNotSet "Parameter spNumOfImages is not set"
+#define invalidLine "Invalid configuration line\n"
+#define invalidValue "Invalid value - constraint not met\n"
+#define directoryNotSet "Parameter spImagesDirectory is not set\n"
+#define preffixNotSet "Parameter spImagesPrefix is not set\n"
+#define suffixNotSet "Parameter spImagesSuffix is not set\n"
+#define imageNumNotSet "Parameter spNumOfImages is not set\n"
 
-/** *Error massages reported to logger**/
-#define configIsNull "config is NULL"
-#define msgIsNull "msg is NULL"
-#define argIsNull "one of the arguments is NULL"
+/** Error massages reported to logger **/
+#define configIsNull "config is NULL\n"
+#define msgIsNull "msg is NULL\n"
+#define filenameIsNull "filename is NULL\n"
+#define argIsNull "one of the arguments is NULL\n"
+#define fileNotOpen "file cannot be opened\n"
+#define allocFail "memory allocation failure\n"
+
+/** Debug massages reported to logger **/
+#define funcCalled "Beggining of function\n"
 
 struct sp_config_t{
 	char* spImagesDirectory;
@@ -98,14 +104,13 @@ bool getterAssert(const SPConfig config, SP_CONFIG_MSG* msg);
 SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 	SPConfig config = NULL;
 	FILE* file = NULL;
-	SP_LOGGER_MSG logMsg = NULL;
 	char line[MAX_SIZE];
 	int lineCounter = 0;
 
 	assert(msg != NULL);
 
 	if (filename == NULL) {
-		msg = SP_CONFIG_INVALID_ARGUMENT;
+		*msg = SP_CONFIG_INVALID_ARGUMENT;
 		return config;
 	}
 	file = fopen(filename, "r");
@@ -122,12 +127,6 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 		return config;
 	}
 	initConfiguration(config);
-
-	if (*msg != SP_CONFIG_SUCCESS) {
-		free(config);
-		config = NULL;
-		return config;
-	}
 
 	while (fgets(line, MAX_SIZE, file)) {
 		lineCounter++;
@@ -172,18 +171,6 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 	if (*msg != SP_CONFIG_SUCCESS) {
 		spConfigDestroy(config);
 		config = NULL;
-	}
-
-	logMsg = spLoggerCreate(config->spLoggerFilename, config->spLoggerLevel);
-	if (logMsg == SP_LOGGER_OUT_OF_MEMORY) {
-		spConfigDestroy(config);
-		config = NULL;
-		*msg = SP_CONFIG_ALLOC_FAIL;
-	}
-	if (logMsg == SP_LOGGER_CANNOT_OPEN_FILE) {
-		spConfigDestroy(config);
-		config = NULL;
-		*msg = SP_CONFIG_CANNOT_OPEN_FILE;
 	}
 
 	return config;
@@ -231,6 +218,20 @@ int spConfigGetNumOfSimIms(const SPConfig config, SP_CONFIG_MSG* msg) {
 	return config->spNumOfSimilarImages;
 }
 
+int spConfigGetLogLevel(const SPConfig config, SP_CONFIG_MSG* msg) {
+	if (!getterAssert(config, msg, __func__)) {
+		return -1;
+	}
+	return config->spLoggerLevel;
+}
+
+char* spConfigGetLogName(const SPConfig config, SP_CONFIG_MSG* msg) {
+	if (!getterAssert(config, msg, __func__)) {
+			return -1;
+		}
+		return config->spLoggerFilename;
+}
+
 SP_CONFIG_MSG spConfigGetImagePath(char* imagePath, const SPConfig config,
 		int index) {
 
@@ -246,10 +247,10 @@ SP_CONFIG_MSG spConfigGetImageFeatsPath(char* imagePath, const SPConfig config,
 
 SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config) {
 	int pathLength;
-	char* errMsg;
+	char* errMsg = (char*) malloc(sizeof(*errMsg));
 
 	if (pcaPath == NULL || config == NULL) {
-		errMsg = sprintf("The function was called with an invalid argument");
+		sprintf(errMsg, "The function was called with an invalid argument");
 		spLoggerPrintError(errMsg, __FILE__, __func__, __LINE__);
 		return SP_CONFIG_INVALID_ARGUMENT;
 	}
@@ -312,7 +313,7 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 	int fieldId;
 	int valueAsNum;
 
-	fieldId = findFieldAndValue(line, config, msg, &field, &value);
+	fieldId = findFieldAndValue(line, msg, &field, &value);
 	if (fieldId <= 0) {
 		return;
 	}
@@ -487,7 +488,8 @@ SP_CONFIG_MSG createFilePath(char* imagePath, const SPConfig config,
 }
 
 bool getterAssert(const SPConfig config, SP_CONFIG_MSG* msg, char* func) {
-	char* errMsg = sprintf("The function %s was called with an invalid argument",
+	char* errMsg = (char*) malloc(sizeof(*errMsg));
+	sprintf(errMsg, "The function %s was called with an invalid argument",
 			func);
 
 	assert(msg != NULL);

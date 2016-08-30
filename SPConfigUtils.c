@@ -74,6 +74,8 @@ const char* convertMethodToString(SplitMethod method) {
 	}
 
 	/*shouldn't get to this line */
+	spLoggerPrintError("SplitMethod was altered, but convertMethodToString wasn't",
+		__FILE__, __func__, __LINE__);
 	return NULL;
 }
 
@@ -90,16 +92,17 @@ const char* convertTypeToString(ImageType type) {
 	}
 
 	/*shouldn't reach this line */
+	/*shouldn't get to this line */
+	spLoggerPrintError("ImageType was altered, but convertTypeToString wasn't",
+		__FILE__, __func__, __LINE__);
 	return NULL;
 }
 
-int findFieldAndValue(char* line, SPConfig config, SP_CONFIG_MSG* msg,
-		char* field,char* value) {
+int findFieldAndValue(char* line, SP_CONFIG_MSG* msg, char* field, char* value) {
 
 	int i = 0;
 	int count = 0;
 	int fieldId;
-	int valueAsNum;
 
 	while (line[i] == ' ')
 		i++;
@@ -150,5 +153,5 @@ int findFieldAndValue(char* line, SPConfig config, SP_CONFIG_MSG* msg,
 
 
 void printError(const char* filename, int lineNumber, char* msg) {
-	sprintf("File: %s\nLine: %d\nMessage: %s\n", filename, lineNumber, msg);
+	printf("File: %s\nLine: %d\nMessage: %s\n", filename, lineNumber, msg);
 }
