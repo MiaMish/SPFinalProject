@@ -98,8 +98,12 @@ const char* convertTypeToString(ImageType type) {
 	return NULL;
 }
 
-int findFieldAndValue(char* line, SP_CONFIG_MSG* msg, char* field, char* value) {
-
+/*
+ * return 0 - line is empty or a comment
+ * return -1 if line format is not field = value
+ */
+int extractFieldAndValue(char* line, char* value) {
+	char* field;
 	int i = 0;
 	int count = 0;
 	int fieldId;
@@ -111,9 +115,11 @@ int findFieldAndValue(char* line, SP_CONFIG_MSG* msg, char* field, char* value) 
 	* comment lines or empty lines are allowed
 	*/
 	if (line[i] == '#' || line[i] == '\n' || line[i] == EOF) {
-		*msg = SP_CONFIG_SUCCESS;
+		free(field);
 		return 0;
 	}
+
+	field = (char*) malloc(sizeof(char) * MAX_SIZE);
 
 	/** extracting the first string from line **/
 	while (line[i] != '\n' || line[i] != EOF || line[i] != ' '
@@ -125,7 +131,7 @@ int findFieldAndValue(char* line, SP_CONFIG_MSG* msg, char* field, char* value) 
 
 	fieldId = convertFieldToNum(field);
 	if (line[i] != '=' || fieldId == -1) {
-		*msg = SP_CONFIG_INVALID_LINE;
+		free(field);
 		return -1;
 	}
 
@@ -142,12 +148,13 @@ int findFieldAndValue(char* line, SP_CONFIG_MSG* msg, char* field, char* value) 
 
 	while (line[i] != '\n' || line[i] != EOF) {
 		if (line[i] != ' ') {
-			*msg = SP_CONFIG_INVALID_STRING;
+			free(field);
 			return -1;
 		}
 		value[count] = line[i];
 		count++;
 	}
+	free(field);
 	return fieldId;
 }
 

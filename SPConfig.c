@@ -18,6 +18,8 @@
 #define spLoggerLevelDefault 3
 #define spLoggerFilenameDefault "stdout"
 #define spKDTreeSplitMethodDefault MAX_SPREAD
+#define spExtractionModeDefault true
+#define spMinimalGuiDefault false
 
 /**the range of spPCADimension **/
 #define PCADimUpperBound 28
@@ -40,7 +42,7 @@
 #define allocFail "memory allocation failure\n"
 
 /** Debug massages reported to logger **/
-#define funcCalled "Beggining of function\n"
+#define funcCalled "Beginning of function\n"
 
 struct sp_config_t{
 	char* spImagesDirectory;
@@ -225,6 +227,13 @@ int spConfigGetLogLevel(const SPConfig config, SP_CONFIG_MSG* msg) {
 	return config->spLoggerLevel;
 }
 
+int spConfigGetSpKNN(const SPConfig config, SP_CONFIG_MSG* msg) {
+	if (!getterAssert(config, msg, __func__)) {
+			return -1;
+		}
+		return config->spKNN;
+}
+
 char* spConfigGetLogName(const SPConfig config, SP_CONFIG_MSG* msg) {
 	if (!getterAssert(config, msg, __func__)) {
 			return -1;
@@ -290,6 +299,20 @@ char* spConfigGetSuffix(const SPConfig config, SP_CONFIG_MSG* msg) {
 	return config->spImagesSuffix;
 }
 
+SP_CONFIG_MSG spConfigGetPCAFilename(const SPConfig config, SP_CONFIG_MSG* msg) {
+	if (!getterAssert(config, msg, __func__)) {
+			return NULL;
+		}
+		return config->spPCAFilename;
+}
+
+SplitMethod spConfigGetSplitMethod(const SPConfig config, SP_CONFIG_MSG* msg) {
+	if (!getterAssert(config, msg, __func__)) {
+			return NULL;
+		}
+		return config->spKDTreeSplitMethod;
+}
+
 void spConfigDestroy(SPConfig config) {
 	if (config != NULL) {
 		if (logger != NULL) {
@@ -306,15 +329,19 @@ void spConfigDestroy(SPConfig config) {
  */
 
 void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
-	char field[MAX_SIZE];
 	char value[MAX_SIZE];
 	int i = 0;
 	int count = 0;
 	int fieldId;
 	int valueAsNum;
 
-	fieldId = findFieldAndValue(line, msg, &field, &value);
+	fieldId = findFieldAndValue(line, msg, &value);
 	if (fieldId <= 0) {
+		if (fieldId == 0) {
+			*msg = SP_CONFIG_SUCCESS;
+		} else if (fieldId == -1) {
+			*msg = SP_CONFIG_INVALID_LINE;
+		}
 		return;
 	}
 
@@ -439,11 +466,11 @@ void initConfuguration(SPConfig config) {
 	config->spPCADimension = spPCADimensionDefault;
 	config->spPCAFilename = spPCAFilenameDefault;
 	config->spNumOfFeatures = spNumOfFeaturesDefault;
-	config->spExtractionMode = true;
+	config->spExtractionMode = spExtractionModeDefault;
 	config->spNumOfSimilarImages = spNumOfSimilarImagesDefault;
 	config->spKDTreeSplitMethod = spKDTreeSplitMethodDefault;
 	config->spKNN = spKNNDefault;
-	config->spMinimalGUI = false;
+	config->spMinimalGUI = spMinimalGuiDefault;
 	config->spLoggerLevel = spLoggerLevelDefault;
 	config->spLoggerFilename = spLoggerFilenameDefault;
 

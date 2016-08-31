@@ -44,16 +44,11 @@ const char* convertTypeToString(ImageType type);
 
 /*
  * recieves a  string and tries to split it into field and value
- * msg = SP_CONFIG_SUCCESS if line is in correct format
- * msg = SP_CONFIG_INVALID_STRING if line is not in the correct format
- * msg = SP_CONFIG_INVALID_INTEGER if value is supposed to be an integer,
- * msg = SP_CONFIG_INVALID_LINE if field doesn't exist but is not one
  *
- * @return non-negative number if line is valid
- * @return -1 if line is not valid
+ * return 0 - line is empty or a comment
+ * return -1 if line format is not field = value
  */
-int findFieldAndValue(char* line, SP_CONFIG_MSG* msg,
-		char* field, char* value);
+int extractFieldAndValue(char* line, char* value);
 
 /*
  * @param filename - the name of the configuration file

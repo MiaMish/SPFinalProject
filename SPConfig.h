@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include "SPLogger.h"
+#include "SPConfigUtils.h"
+
 
 /**
  * A data-structure which is used for configuring the system.
@@ -166,6 +168,89 @@ char* spConfigGetLogName(const SPConfig config, SP_CONFIG_MSG* msg);
 int spConfigGetLogLevel(const SPConfig config, SP_CONFIG_MSG* msg);
 
 /**
+ * Returns the value of spKNN.
+ *
+ * @param config - the configuration structure
+ * @assert msg != NULL
+ * @param msg - pointer in which the msg returned by the function is stored
+ * @return positive integer on success, -1 otherwise.
+ *
+ * - SP_CONFIG_INVALID_ARGUMENT - if config == NULL
+ * - SP_CONFIG_SUCCESS - in case of success
+ */
+int spConfigGetSpKNN(const SPConfig config, SP_CONFIG_MSG* msg);
+
+/*
+ * Returns the directory set in the configuration file, i.e the value
+ * of spImagesDirectory.
+ *
+ * @param config - the configuration structure
+ * @assert msg != NULL
+ * @param msg - pointer in which the msg returned by the function is stored
+ * @return string in success, NULL otherwise.
+ *
+ * - SP_CONFIG_INVALID_ARGUMENT - if config == NULL
+ * - SP_CONFIG_SUCCESS - in case of success
+ */
+char* spConfigGetDirectory(const SPConfig config, SP_CONFIG_MSG* msg);
+
+/*
+ * Returns the prefix set in the configuration file, i.e the value
+ * of spImagesPrefix.
+ *
+ * @param config - the configuration structure
+ * @assert msg != NULL
+ * @param msg - pointer in which the msg returned by the function is stored
+ * @return string in success, NULL otherwise.
+ *
+ * - SP_CONFIG_INVALID_ARGUMENT - if config == NULL
+ * - SP_CONFIG_SUCCESS - in case of success
+ */
+char* spConfigGetPrefix(const SPConfig config, SP_CONFIG_MSG* msg);
+
+/*
+ * Returns the suffix set in the configuration file, i.e the value
+ * of spImagesSuffix.
+ *
+ * @param config - the configuration structure
+ * @assert msg != NULL
+ * @param msg - pointer in which the msg returned by the function is stored
+ * @return string in success, NULL otherwise.
+ *
+ * - SP_CONFIG_INVALID_ARGUMENT - if config == NULL
+ * - SP_CONFIG_SUCCESS - in case of success
+ */
+char* spConfigGetSuffix(const SPConfig config, SP_CONFIG_MSG* msg);
+
+/*
+ * Returns the PCA filename set in the configuration file, i.e the value
+ * of spPCAFilename.
+ *
+ * @param config - the configuration structure
+ * @assert msg != NULL
+ * @param msg - pointer in which the msg returned by the function is stored
+ * @return string in success, NULL otherwise.
+ *
+ * - SP_CONFIG_INVALID_ARGUMENT - if config == NULL
+ * - SP_CONFIG_SUCCESS - in case of success
+ */
+char* spConfigGetPCAFilename(const SPConfig config, SP_CONFIG_MSG* msg);
+
+/*
+ * Returns the Split Method set in the configuration file, i.e the value
+ * of spKDTreeSplitMethod.
+ *
+ * @param config - the configuration structure
+ * @assert msg != NULL
+ * @param msg - pointer in which the msg returned by the function is stored
+ * @return type SplitMethod, NULL otherwise.
+ *
+ * - SP_CONFIG_INVALID_ARGUMENT - if config == NULL
+ * - SP_CONFIG_SUCCESS - in case of success
+ */
+SplitMethod spConfigGetSplitMethod(const SPConfig config, SP_CONFIG_MSG* msg);
+
+/**
  * Given an index 'index' the function stores in imagePath the full path of the
  * ith image.
  *
@@ -239,48 +324,6 @@ SP_CONFIG_MSG spConfigGetImageFeatsPath(char* imagePath, const SPConfig config,
  *  - SP_CONFIG_SUCCESS - in case of success
  */
 SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config);
-
-/*
- * Returns the directory set in the configuration file, i.e the value
- * of spImagesDirectory.
- *
- * @param config - the configuration structure
- * @assert msg != NULL
- * @param msg - pointer in which the msg returned by the function is stored
- * @return string in success, NULL otherwise.
- *
- * - SP_CONFIG_INVALID_ARGUMENT - if config == NULL
- * - SP_CONFIG_SUCCESS - in case of success
- */
-char* spConfigGetDirectory(const SPConfig config, SP_CONFIG_MSG* msg);
-
-/*
- * Returns the prefix set in the configuration file, i.e the value
- * of spImagesPrefix.
- *
- * @param config - the configuration structure
- * @assert msg != NULL
- * @param msg - pointer in which the msg returned by the function is stored
- * @return string in success, NULL otherwise.
- *
- * - SP_CONFIG_INVALID_ARGUMENT - if config == NULL
- * - SP_CONFIG_SUCCESS - in case of success
- */
-SP_CONFIG_MSG spConfigGetPrefix(const SPConfig config);
-
-/*
- * Returns the suffix set in the configuration file, i.e the value
- * of spImagesSuffix.
- *
- * @param config - the configuration structure
- * @assert msg != NULL
- * @param msg - pointer in which the msg returned by the function is stored
- * @return string in success, NULL otherwise.
- *
- * - SP_CONFIG_INVALID_ARGUMENT - if config == NULL
- * - SP_CONFIG_SUCCESS - in case of success
- */
-SP_CONFIG_MSG spConfigGetSuffix(char* pcaPath, const SPConfig config);
 
 /**
  * Frees all memory resources associate with config. 

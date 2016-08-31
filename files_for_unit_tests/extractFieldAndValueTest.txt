@@ -1,0 +1,25 @@
+#this is valid line, the next one's are invalid
+sp Images Directory = ./images/ 
+spImagesSuffix = values cannot contain whitespaces
+spImagesPrefix=
+spPCADimension
+   #now comes valid lines  
+     spImagesDirectory=./images/ 
+spImagesSuffix = img
+spKNN=4
+
+            
+spMinimalGUI =true
+spMinimalGUI= colors
+spImagesDirectory=3Ponies
+spImagesPrefix   = UniCorns2
+  spImagesSuffix = .cats
+spNumOfImages = three
+spPCADimension = n
+spPCAFilename = nemasis
+spNumOfFeatures = 5
+spExtractionMode= exterminate
+spNumOfSimilarImages=0
+  spKDTreeSplitMethod mewMew
+spLoggerLevel=100
+spLoggerFilename=PhiliDelphia

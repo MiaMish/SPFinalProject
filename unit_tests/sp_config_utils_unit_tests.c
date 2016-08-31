@@ -1,8 +1,5 @@
 /*
- * SPConfigTests.c
- *
- *  Created on: 11 баев 2016
- *      Author: Ana
+ * sp_config_utils_unit_tests.c
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -101,12 +98,40 @@ bool typeToStringTest() {
 	return true;
 }
 
+bool extractFieldAndValueTest() {
+	char* filename = "./files_for_unit_tests/extractFieldAndValueTest.txt";
+	FILE* file = fopen(filename, "r");
+	char* line = (char*) malloc(sizeof(char) * 1024);
+	char* value = (char*) malloc(sizeof(char) * 1024);
+	int fieldId;
+	int i;
+
+	ASSERT_FALSE(file);
+	ASSERT_FALSE(line);
+	ASSERT_FALSE(value);
+
+	int fieldIdRes[25] = {0, -1, -1, -1, -1, 0, 1, 3, 11, 0, 0, 12, 12, 2,
+			3, 4, 5, 6, 7, 8, 9, 10, 13, 14};
+
+	for(i = 0; i < 25; i++) {
+		fgets(line, 1024, file);
+		fieldId = extractFieldAndValue(line, value);
+		ASSERT_TRUE(fieldId == fieldIdRes[i]);
+	}
+
+	free(line);
+	free(value);
+	fclose(file);
+	return true;
+}
+
 
 int main_test() {
 	RUN_TEST(stringToIntTest);
 	RUN_TEST(fieldToNumTest);
 	RUN_TEST(methodToStringTest);
 	RUN_TEST(typeToStringTest);
+	RUN_TEST(extractFieldAndValueTest);
 
 	return 1;
 }
