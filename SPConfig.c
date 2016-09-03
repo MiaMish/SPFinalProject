@@ -6,7 +6,6 @@
 #include <string.h>
 
 #include "SPConfig.h"
-#include "SPConfigUtils.h"
 #include "SPLogger.h"
 
 /** default values for configuration **/
@@ -93,14 +92,14 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg);
  * - SP_CONFIG_SUCCESS - in case of success
  */
 SP_CONFIG_MSG createFilePath(char* imagePath, const SPConfig config,
-		int index, char* suffix);
+		int index, char* suffix, char* func);
 
 /*
  * @assert msg != NULL
  * @returns true if config != NULL
  * and false otherwise
  */
-bool getterAssert(const SPConfig config, SP_CONFIG_MSG* msg);
+bool getterAssert(const SPConfig config, SP_CONFIG_MSG* msg, char* func);
 
 
 SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
@@ -299,7 +298,7 @@ char* spConfigGetSuffix(const SPConfig config, SP_CONFIG_MSG* msg) {
 	return config->spImagesSuffix;
 }
 
-SP_CONFIG_MSG spConfigGetPCAFilename(const SPConfig config, SP_CONFIG_MSG* msg) {
+char* spConfigGetPCAFilename(const SPConfig config, SP_CONFIG_MSG* msg) {
 	if (!getterAssert(config, msg, __func__)) {
 			return NULL;
 		}

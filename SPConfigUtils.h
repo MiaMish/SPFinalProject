@@ -5,7 +5,7 @@
 #ifndef SPCONFIGUTILS_H_
 #define SPCONFIGUTILS_H_
 
-#define MAX_SIZE 1024
+
 
 /** suffix for features file **/
 #define spFeatsSuffix "feats"
@@ -19,6 +19,10 @@ typedef enum sp_methods {
 typedef enum imageTypes {
 	jpg, png, bmp, gif
 } ImageType;
+
+#define MAX_SIZE 1024
+#define sizeOfSplitMethod 3
+#define sizeOfImageType 4
 
 /*
  * if str is not a decimal number, returns -1
