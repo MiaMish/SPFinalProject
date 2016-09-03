@@ -7,17 +7,18 @@
 #include <string.h>
 #include "SPImageProc.h"
 
+using sp::ImageProc;
+
 extern "C"{
 //include your own C source files
 #include "SPPoint.h"
 #include "SPLogger.h"
 #include "SPConfig.h"
-#include "main_aux.c"
+#include "main_aux.h"
 }
 
 int main(int argc, char* argv[]) {
-	char* filename = "spcbir.config"; //default name
-	FILE* file = NULL;
+	const char* filename = "spcbir.config"; //default name
 	SP_CONFIG_MSG* msg = NULL;
 	SP_LOGGER_MSG* logMsg = NULL;
 	SPConfig config = NULL;
@@ -79,7 +80,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	numOfImages = spConfigGetNumOfImages(config, msg);
-	ImageProc(config);
+	ImageProc imageProc(config);
 
 	if (spConfigIsExtractionMode(config, msg)) {
 		for (i = 1; i <= numOfImages; i++) {
@@ -89,7 +90,7 @@ int main(int argc, char* argv[]) {
 				free(numOfFeats);
 				return terminate(config, msg);
 			}
-			imFeatures = getImageFeatures(imagePath, i, numOfFeats);
+			imFeatures = imageProc.getImageFeatures(imagePath, i, numOfFeats);
 			if (imFeatures == NULL) {
 				spLoggerPrintError(unknownErr, __FILE__, __func__, __LINE__);
 				free(numOfFeats);
@@ -125,7 +126,7 @@ int main(int argc, char* argv[]) {
 
 			for (i = 0; i < spConfigGetNumOfSimIms(config, msg); i++) {
 
-				showImage(imagePath);
+				imageProc.showImage(imagePath);
 				getchar();
 				//until user presses some key, the same image will
 				//show on screen

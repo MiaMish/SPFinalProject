@@ -11,7 +11,7 @@
 
 #include "SPPoint.h"
 #include "SPConfig.h"
-#include "SPConfigUtils.c"
+#include "SPConfigUtils.h"
 #include "SPLogger.h"
 
 #define extMsg "Exiting…\n"
@@ -94,8 +94,7 @@ SP_CONFIG_MSG* createFeaturesFile(SPPoint* imFeatures, SP_CONFIG_MSG* msg,
 		return msg;
 	}
 
-	sprintfRes = sprintf(line, "index = %d, number of features = %d",
-			index, numOfFeats);
+	sprintfRes = sprintf(line, "index = %d, number of features = %d", index, *numOfFeats);
 	if (sprintfRes < 0) {
 		//sprintf failed
 		*msg = SP_CONFIG_UNKNOWN_ERROR;
@@ -154,8 +153,7 @@ bool nonExtractionModeLegal(SPConfig config, SP_CONFIG_MSG* msg,
 		}
 
 		//extracting only 2 integers from first line of file
-		sscanf(line, "%*[^0123456789]%d%*[^0123456789]%d%",
-				fileIndex, fileNumOfFeatures);
+		sscanf(line, "%*[^0123456789]%d%*[^0123456789]%d",	fileIndex, fileNumOfFeatures);
 
 		maxNumOfFeatures = spConfigGetNumOfFeatures(config, msg);
 
