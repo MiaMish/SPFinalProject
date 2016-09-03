@@ -189,7 +189,7 @@ bool SplitArray() {
 	return true;
 }
 
-int main() {
+int main17() {
 	setbuf(stdout, NULL);
 	RUN_TEST(InitAndDestroyArray);
 	RUN_TEST(GetPointsCount);
