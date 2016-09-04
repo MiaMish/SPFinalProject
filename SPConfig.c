@@ -333,6 +333,7 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 	int count = 0;
 	int fieldId;
 	int valueAsNum;
+	const char* typeString;
 
 	fieldId = extractFieldAndValue(line, &value);
 	if (fieldId <= 0) {
@@ -366,12 +367,13 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 		break;
 
 	case 3:
-		if (i = 0; i < sizeOfImageType; i++) {
-			const char* typeString = convertTypeToString(imageType);
+		for (i = 0; i < sizeOfImageType; i++) {
+			typeString = convertTypeToString(ImageType[i]);
 			if (strcmp(value, typeString) == 0) {
 				config->spImagesSuffix = (char*) typeString;
 			}
-		} else {
+		}
+		if(config->spImagesSuffix == NULL) {
 			*msg = SP_CONFIG_INVALID_STRING;
 			return;
 		}
