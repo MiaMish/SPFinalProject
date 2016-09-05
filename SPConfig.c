@@ -6,7 +6,6 @@
 #include <string.h>
 
 #include "SPConfig.h"
-#include "SPConfigUtils.h"
 #include "SPLogger.h"
 
 /** default values for configuration **/
@@ -91,14 +90,17 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg);
  * - SP_CONFIG_INDEX_OUT_OF_RANGE - if index >= spNumOfImages or index < 1
  * - SP_CONFIG_SUCCESS - in case of success
  */
+
 SP_CONFIG_MSG createFilePath(char* imagePath, const SPConfig config, int index,
 		char* suffix, const char* func);
+
 /*
  * @assert msg != NULL
  * @returns true if config != NULL
  * and false otherwise
  */
 bool getterAssert(const SPConfig config, SP_CONFIG_MSG* msg, const char* func);
+
 
 SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 	SPConfig config = NULL;
@@ -300,7 +302,7 @@ char* spConfigGetPCAFilename(const SPConfig config, SP_CONFIG_MSG* msg) {
 
 SplitMethod spConfigGetSplitMethod(const SPConfig config, SP_CONFIG_MSG* msg) {
 	if (!getterAssert(config, msg, __func__)) {
-		return RANDOM;
+		return NULL;
 	}
 	return config->spKDTreeSplitMethod;
 }
@@ -323,6 +325,7 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 	char value[MAX_SIZE];
 	int fieldId;
 	int valueAsNum;
+	const char* typeString;
 
 	fieldId = extractFieldAndValue(line, value);
 	if (fieldId <= 0) {
