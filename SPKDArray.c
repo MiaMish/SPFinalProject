@@ -111,7 +111,8 @@ int pointsComparator(const void* ptr1, const void* ptr2) {
 void sortIndices(SPKDArray* kdArr, int axis) {
 	currentKdArr = kdArr;
 	currentAxis = axis;
-	qsort(kdArr->sortedIndices[axis], kdArr->pointsCount, sizeof(int), pointsComparator);
+	qsort(kdArr->sortedIndices[axis], kdArr->pointsCount, sizeof(int),
+			pointsComparator);
 }
 
 #define SPLIT_CLEANUP(leftMap, rightMap, leftPoints, rightPoints, leftTree, rightTree)   \
@@ -122,12 +123,13 @@ void sortIndices(SPKDArray* kdArr, int axis) {
 	spKDArrayDestroy(leftTree);   \
 	spKDArrayDestroy(rightTree)
 
-void spKDArraySplit(SPKDArray* kdArr, int coor, SPKDArray** kdLeft, SPKDArray** kdRight) {
+void spKDArraySplit(SPKDArray* kdArr, int coor, SPKDArray** kdLeft,
+		SPKDArray** kdRight) {
 	*kdLeft = NULL;
 	*kdRight = NULL;
 
-	bool* leftMap = (bool*) calloc(kdArr->pointsCount, sizeof(bool));
-	bool* rightMap = (bool*) calloc(kdArr->pointsCount, sizeof(bool));
+	int* leftMap = (int*) calloc(kdArr->pointsCount, sizeof(int));
+	int* rightMap = (int*) calloc(kdArr->pointsCount, sizeof(int));
 
 	int leftSize = (kdArr->pointsCount + 1) / 2;
 	int rightSize = kdArr->pointsCount / 2;
@@ -142,42 +144,43 @@ void spKDArraySplit(SPKDArray* kdArr, int coor, SPKDArray** kdLeft, SPKDArray** 
 	int i;
 	for (i = 0; i < leftSize; i++) {
 		int currIndex = kdArr->sortedIndices[coor][i];
-		leftMap[currIndex] = true; // mark lefts
+		leftMap[currIndex] = i + 1; // mark lefts
 		leftPoints[i] = kdArr->points[currIndex];
 	}
-	for (int j = 0; j < rightSize; j++) {
+	for (int j = 0; i < kdArr->pointsCount; i++, j++) {
 		int currIndex = kdArr->sortedIndices[coor][i];
-		rightMap[currIndex] = true; // mark lefts
-		rightPoints[i] = kdArr->points[currIndex];
+		rightMap[currIndex] = j + 1; // mark rights
+		rightPoints[j] = kdArr->points[currIndex];
 	}
 
 	*kdLeft = InitBasic(leftPoints, leftSize, kdArr->dim);
 	*kdRight = InitBasic(rightPoints, rightSize, kdArr->dim);
 
 	if (*kdLeft == NULL || *kdRight == NULL) {
-		SPLIT_CLEANUP(leftMap, rightMap, leftPoints, rightPoints, *kdLeft, *kdRight);
+		SPLIT_CLEANUP(leftMap, rightMap, leftPoints, rightPoints, *kdLeft,
+				*kdRight);
 		return;
 	}
 
-	for (int i = 0; i<kdArr->dim; i++) {
+	for (i = 0; i < kdArr->dim; i++) {
 		int leftSpot = 0;
 		int rightSpot = 0;
-		for (int j = 0; j<kdArr->dim; j++) {
+		for (int j = 0; j < kdArr->pointsCount; j++) {
 			int currIndex = kdArr->sortedIndices[i][j];
-			if (leftMap[currIndex]) {
-				(*kdLeft)->sortedIndices[i][leftSpot] = currIndex;
+			if (leftMap[currIndex] > 0) {
+				(*kdLeft)->sortedIndices[i][leftSpot] = leftMap[currIndex] - 1;
 				leftSpot++;
-			}
-			else if (rightMap[currIndex]) {
-				(*kdRight)->sortedIndices[i][rightSpot] = currIndex;
+			} else if (rightMap[currIndex] > 0) {
+				(*kdRight)->sortedIndices[i][rightSpot] = rightMap[currIndex] - 1;
 				rightSpot++;
-			}
-			else {
+			} else {
 				assert(false);
 			}
 		}
-		assert(leftSpot == leftSize);
-		assert(rightSpot == rightSize);
+		if (leftSpot != leftSize || rightSpot != rightSize) {
+			assert(leftSpot == leftSize);
+			assert(rightSpot == rightSize);
+		}
 	}
 
 	SPLIT_CLEANUP(leftMap, rightMap, leftPoints, rightPoints, NULL, NULL);

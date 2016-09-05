@@ -41,6 +41,9 @@ SPPoint spPointCopy(SPPoint source) {
 	int index;
 
 	//ASSERT_NULL(source, "ASSERTION FAILED :: source is NULL");
+	if (source == NULL) {
+		return NULL;
+	}
 	assert(source != NULL);
 
 	data = source->coordinates;

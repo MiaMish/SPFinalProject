@@ -22,6 +22,6 @@ SPKDTreeNode* spKDTreeInit(SPKDArray* kdArr, SplitMethod splitMethod);
 
 void spKDTreeDestroy(SPKDTreeNode* root);
 
-SPBPQueue spKDTreeNearestNeighbor(SPKDTreeNode* root, SPPoint testPoint, int neighborsCount, int spKNN);
+SPBPQueue spKDTreeNearestNeighbor(SPKDTreeNode* root, SPPoint testPoint, int neighborsCount);
 
 #endif /* SPKDTREE_H_ */

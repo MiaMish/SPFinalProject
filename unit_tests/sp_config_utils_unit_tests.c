@@ -68,9 +68,9 @@ bool methodToStringTest() {
 	char* str2 = "MAX_SPREAD";
 	char* str3 = "INCREMENTAL";
 
-	char* res1 = convertMethodToString(RANDOM);
-	char* res2 = convertMethodToString(MAX_SPREAD);
-	char* res3 = convertMethodToString(INCREMENTAL);
+	const char* res1 = convertMethodToString(RANDOM);
+	const char* res2 = convertMethodToString(MAX_SPREAD);
+	const char* res3 = convertMethodToString(INCREMENTAL);
 
 	ASSERT_TRUE(strcmp(str1, res1) == 0);
 	ASSERT_TRUE(strcmp(str2, res2) == 0);
@@ -85,10 +85,10 @@ bool typeToStringTest() {
 	char* str3 = ".bmp";
 	char* str4 = ".gif";
 
-	char* res1 = convertTypeToString(jpg);
-	char* res2 = convertTypeToString(png);
-	char* res3 = convertTypeToString(bmp);
-	char* res4 = convertTypeToString(gif);
+	const char* res1 = convertTypeToString(jpg);
+	const char* res2 = convertTypeToString(png);
+	const char* res3 = convertTypeToString(bmp);
+	const char* res4 = convertTypeToString(gif);
 
 	ASSERT_TRUE(strcmp(str1, res1) == 0);
 	ASSERT_TRUE(strcmp(str2, res2) == 0);

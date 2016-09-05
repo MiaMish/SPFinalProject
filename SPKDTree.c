@@ -71,6 +71,9 @@ SPKDTreeNode* Init(SPKDArray* kdArr, SplitMethod splitMethod, int parentSplittin
 	NULL_CHECK(root->right, root);
 	root->leaf = NULL;
 
+	spKDArrayDestroy(leftArr);
+	spKDArrayDestroy(rightArr);
+
 	return root;
 }
 
@@ -129,8 +132,8 @@ void neighborSearch(SPKDTreeNode* root, SPBPQueue bpq, SPPoint point) {
 	}
 }
 
-SPBPQueue spKDTreeNearestNeighbor(SPKDTreeNode* root, SPPoint testPoint, int neighborsCount, int spKNN) {
-	SPBPQueue bpq = spBPQueueCreate(spKNN);
+SPBPQueue spKDTreeNearestNeighbor(SPKDTreeNode* root, SPPoint testPoint, int neighborsCount) {
+	SPBPQueue bpq = spBPQueueCreate(neighborsCount);
 	if (bpq == NULL) {
 		return NULL;
 	}

@@ -45,12 +45,12 @@
 #define funcCalled "Beginning of function\n"
 
 struct sp_config_t {
-	char* spImagesDirectory;
-	char* spImagesPrefix;
-	char* spImagesSuffix;
+	char spImagesDirectory[MAX_SIZE];
+	char spImagesPrefix[MAX_SIZE];
+	char spImagesSuffix[MAX_SIZE];
 	int spNumOfImages;
 	int spPCADimension;
-	char* spPCAFilename;
+	char spPCAFilename[MAX_SIZE];
 	int spNumOfFeatures;
 	bool spExtractionMode;
 	int spNumOfSimilarImages;
@@ -58,7 +58,7 @@ struct sp_config_t {
 	int spKNN;
 	bool spMinimalGUI;
 	int spLoggerLevel;
-	char* spLoggerFilename;
+	char spLoggerFilename[MAX_SIZE];
 };
 
 /*
@@ -125,7 +125,8 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 		config = NULL;
 		return config;
 	}
-	// initConfiguration(config); TODO - missing
+
+	initConfiguration(config);
 
 	while (fgets(line, MAX_SIZE, file)) {
 		lineCounter++;
@@ -151,13 +152,13 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 
 	fclose(file);
 
-	if (config->spImagesDirectory == NULL) {
+	if (strlen(config->spImagesDirectory) == 0) {
 		*msg = SP_CONFIG_MISSING_DIR;
 		printError(filename, lineCounter, directoryNotSet);
-	} else if (config->spImagesPrefix == NULL) {
+	} else if (strlen(config->spImagesPrefix) == 0) {
 		*msg = SP_CONFIG_MISSING_PREFIX;
 		printError(filename, lineCounter, preffixNotSet);
-	} else if (config->spImagesSuffix == NULL) {
+	} else if (strlen(config->spImagesSuffix) == 0) {
 		*msg = SP_CONFIG_MISSING_SUFFIX;
 		printError(filename, lineCounter, suffixNotSet);
 	} else if (config->spNumOfImages == -1) {
@@ -238,38 +239,31 @@ char* spConfigGetLogName(const SPConfig config, SP_CONFIG_MSG* msg) {
 	return config->spLoggerFilename;
 }
 
-SP_CONFIG_MSG spConfigGetImagePath(char* imagePath, const SPConfig config,
-		int index) {
+SP_CONFIG_MSG spConfigGetImagePath(char* imagePath, const SPConfig config, int index) {
 
 	return createFilePath(imagePath, config, index, config->spImagesSuffix,
 			__func__);
 }
 
-SP_CONFIG_MSG spConfigGetImageFeatsPath(char* imagePath, const SPConfig config,
-		int index) {
+SP_CONFIG_MSG spConfigGetImageFeatsPath(char* imagePath, const SPConfig config,	int index) {
 
 	return createFilePath(imagePath, config, index, spFeatsSuffix, __func__);
 }
 
 SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config) {
 	int pathLength;
-	char* errMsg = (char*) malloc(sizeof(*errMsg));
 
 	if (pcaPath == NULL || config == NULL) {
-		sprintf(errMsg, "The function was called with an invalid argument");
-		spLoggerPrintError(errMsg, __FILE__, __func__, __LINE__);
+		spLoggerPrintError("The function was called with an invalid argument", __FILE__, __func__, __LINE__);
 		return SP_CONFIG_INVALID_ARGUMENT;
 	}
 
-	realloc(pcaPath,
-			sizeof(*config->spImagesDirectory)
-					+ sizeof(*config->spPCAFilename));
+	realloc(pcaPath, strlen(config->spImagesDirectory) + strlen(config->spPCAFilename));
 
-	pathLength = sprintf(pcaPath, "%s%s\n", config->spImagesDirectory,
+	pathLength = sprintf(pcaPath, "%s%s", config->spImagesDirectory,
 			config->spPCAFilename);
 	if (pathLength < 1) {
-		errMsg = "sprintf function has failed";
-		spLoggerPrintError(errMsg, __FILE__, __func__, __LINE__);
+		spLoggerPrintError("sprintf function has failed", __FILE__, __func__, __LINE__);
 		return SP_CONFIG_UNKNOWN_ERROR;
 	}
 
@@ -327,12 +321,10 @@ void spConfigDestroy(SPConfig config) {
 
 void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 	char value[MAX_SIZE];
-	int i = 0;
-	int count = 0;
 	int fieldId;
 	int valueAsNum;
 
-	fieldId = extractFieldAndValue(line, &value);
+	fieldId = extractFieldAndValue(line, value);
 	if (fieldId <= 0) {
 		if (fieldId == 0) {
 			*msg = SP_CONFIG_SUCCESS;
@@ -356,11 +348,11 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 
 	switch (fieldId) {
 	case 1:
-		config->spImagesDirectory = value;
+		strcpy(config->spImagesDirectory, value);
 		break;
 
 	case 2:
-		config->spImagesPrefix = value;
+		strcpy(config->spImagesPrefix, value);
 		break;
 
 	case 3:
@@ -368,14 +360,13 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 			for (ImageType imageType = jpg; imageType <= gif; imageType++) {
 				const char* typeString = convertTypeToString(imageType);
 				if (strcmp(value, typeString) == 0) {
-					config->spImagesSuffix = (char*) typeString;
+					strcpy(config->spImagesSuffix, typeString);
+					return;
 				}
 			}
-		} else {
-			*msg = SP_CONFIG_INVALID_STRING;
-			return;
 		}
-		break;
+		*msg = SP_CONFIG_INVALID_STRING;
+		return;
 
 	case 4:
 		config->spNumOfImages = valueAsNum;
@@ -390,7 +381,7 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 		break;
 
 	case 6:
-		config->spPCAFilename = value;
+		strcpy(config->spPCAFilename, value);
 		break;
 
 	case 7:
@@ -413,15 +404,15 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 		break;
 
 	case 10:
-		for (i = 0; i < (sizeof(SplitMethod) / sizeof(SplitMethod*)); i++) {
-			if (strcmp(value, convertMethodToString(((SplitMethod) i))) == 0) {
-				config->spKDTreeSplitMethod = (SplitMethod) i;
-			} else {
-				*msg = SP_CONFIG_INVALID_STRING;
+
+		for (SplitMethod splitMethod = RANDOM; splitMethod <= INCREMENTAL; splitMethod++) {
+			if (strcmp(value, convertMethodToString((splitMethod))) == 0) {
+				config->spKDTreeSplitMethod = splitMethod;
 				return;
 			}
 		}
-		break;
+		*msg = SP_CONFIG_INVALID_STRING;
+		return;
 
 	case 11:
 		config->spKNN = valueAsNum;
@@ -447,7 +438,7 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 		break;
 
 	case 14:
-		config->spLoggerFilename = value;
+		strcpy(config->spLoggerFilename, value);
 		break;
 
 	default:
@@ -458,9 +449,8 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 	*msg = SP_CONFIG_SUCCESS;
 }
 
-void initConfuguration(SPConfig config) {
+void initConfiguration(SPConfig config) {
 	config->spPCADimension = spPCADimensionDefault;
-	config->spPCAFilename = spPCAFilenameDefault;
 	config->spNumOfFeatures = spNumOfFeaturesDefault;
 	config->spExtractionMode = spExtractionModeDefault;
 	config->spNumOfSimilarImages = spNumOfSimilarImagesDefault;
@@ -468,12 +458,9 @@ void initConfuguration(SPConfig config) {
 	config->spKNN = spKNNDefault;
 	config->spMinimalGUI = spMinimalGuiDefault;
 	config->spLoggerLevel = spLoggerLevelDefault;
-	config->spLoggerFilename = spLoggerFilenameDefault;
-
-	config->spImagesDirectory = NULL;
-	config->spImagesPrefix = NULL;
-	config->spImagesSuffix = NULL;
 	config->spNumOfImages = -1;
+	strcpy(config->spPCAFilename, spPCAFilenameDefault);
+	strcpy(config->spLoggerFilename, spLoggerFilenameDefault);
 }
 
 SP_CONFIG_MSG createFilePath(char* imagePath, const SPConfig config, int index,
@@ -483,22 +470,19 @@ SP_CONFIG_MSG createFilePath(char* imagePath, const SPConfig config, int index,
 	char errMsg[256];
 
 	if (imagePath == NULL || config == NULL) {
-		sprintf(errMsg, "The function %s was called with an invalid argument", func);
+		sprintf(errMsg, "The function %s was called with an invalid argument",
+				func);
 		spLoggerPrintError(errMsg, __FILE__, __func__, __LINE__);
 		return SP_CONFIG_INVALID_ARGUMENT;
 	}
 
-	if (index >= config->spNumOfImages || index < 1) {
+	if (index >= config->spNumOfImages || index < 0) {
 		sprintf(errMsg, "The index given to %s is out of range", func);
 		spLoggerPrintError(errMsg, __FILE__, __func__, __LINE__);
 		return SP_CONFIG_INDEX_OUT_OF_RANGE;
 	}
 
-	realloc(imagePath,
-			strlen(config->spImagesDirectory) + strlen(config->spImagesPrefix)
-					+ sizeof(int) + strlen(suffix) + 5);
-
-	pathLen = sprintf(imagePath, "%s%s%d%s\n", config->spImagesDirectory,
+	pathLen = sprintf(imagePath, "%s%s%d%s", config->spImagesDirectory,
 			config->spImagesPrefix, index, suffix);
 	if (pathLen < 1) {
 		sprintf(errMsg, "sprintf function has failed");
@@ -510,14 +494,10 @@ SP_CONFIG_MSG createFilePath(char* imagePath, const SPConfig config, int index,
 }
 
 bool getterAssert(const SPConfig config, SP_CONFIG_MSG* msg, const char* func) {
-	char* errMsg = (char*) malloc(sizeof(*errMsg));
-	sprintf(errMsg, "The function %s was called with an invalid argument",
-			func);
-
-	assert(msg != NULL);
-
-	if (config == NULL) {
+	if (msg == NULL || config == NULL) {
 		*msg = SP_CONFIG_INVALID_ARGUMENT;
+		char errMsg[256];
+		sprintf(errMsg, "The function %s was called with an invalid argument", func);
 		spLoggerPrintError(errMsg, __FILE__, __func__, __LINE__);
 		return false;
 	}

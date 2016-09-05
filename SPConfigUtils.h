@@ -8,7 +8,7 @@
 #define MAX_SIZE 1024
 
 /** suffix for features file **/
-#define spFeatsSuffix "feats"
+#define spFeatsSuffix ".feats"
 
 /** the options for the cut method when the kd-tree is build **/
 typedef enum sp_methods {
@@ -48,7 +48,7 @@ const char* convertTypeToString(ImageType type);
  * return 0 - line is empty or a comment
  * return -1 if line format is not field = value
  */
-int extractFieldAndValue(char* line, char* value);
+int extractFieldAndValue(const char* line, char* value);
 
 /*
  * @param filename - the name of the configuration file

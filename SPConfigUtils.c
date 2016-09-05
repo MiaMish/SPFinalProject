@@ -7,6 +7,7 @@
 
 
 #include "SPConfigUtils.h"
+#include "SPLogger.h"
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
@@ -49,7 +50,7 @@ int convertFieldToNum(char* field) {
 
 int convertStringToNum(char str[]) {
 	int i = 0;
-	while (str[i] != '\n' || str[i] != EOF) {
+	while (str[i] != '\n' && str[i] != EOF && str[i] != '\0') {
 		if (!isdigit(str[i])) {
 			if (i != 0 || str[i] != '+') { //+int is allowed
 				return -1;
@@ -102,59 +103,24 @@ const char* convertTypeToString(ImageType type) {
  * return 0 - line is empty or a comment
  * return -1 if line format is not field = value
  */
-int extractFieldAndValue(char* line, char* value) {
-	char* field;
-	int i = 0;
-	int count = 0;
-	int fieldId;
+int extractFieldAndValue(const char* line, char* value) {
 
-	while (line[i] == ' ')
-		i++;
 
-	/*
-	* comment lines or empty lines are allowed
-	*/
-	if (line[i] == '#' || line[i] == '\n' || line[i] == EOF) {
-		free(field);
+	if (line[0] == '#' || line[0] == '\n') {
 		return 0;
 	}
 
-	field = (char*) malloc(sizeof(char) * MAX_SIZE);
+	char field[MAX_SIZE];
 
-	/** extracting the first string from line **/
-	while (line[i] != '\n' || line[i] != EOF || line[i] != ' '
-			|| line[i] != '=') {
-		field[count] = line[i];
-		count++;
-	}
-	value[count] = '\0';
-
-	fieldId = convertFieldToNum(field);
-	if (line[i] != '=' || fieldId == -1) {
-		free(field);
+	if (!sscanf(line, "%s = %s", field, value)) {
 		return -1;
 	}
 
-	/** extracting the second string from line **/
-	count = 0;
-	i++; //the previous character '=' isn't part of the value
-	while (line[i] == ' ')
-		i++;
-	while (line[i] != '\n' || line[i] != EOF || line[i] != ' ') {
-		value[count] = line[i];
-		count++;
+	if (field[0] == '#') {
+		return 0;
 	}
-	value[count] = '\0';
 
-	while (line[i] != '\n' || line[i] != EOF) {
-		if (line[i] != ' ') {
-			free(field);
-			return -1;
-		}
-		value[count] = line[i];
-		count++;
-	}
-	free(field);
+	int fieldId = convertFieldToNum(field);
 	return fieldId;
 }
 

@@ -66,6 +66,7 @@ void sp::ImageProc::getImagesMat(vector<Mat>& images, const SPConfig config) {
 			spLoggerPrintError(IMAGE_PATH_ERROR, __FILE__, __func__, __LINE__);
 			throw Exception();
 		}
+
 		Mat img = imread(imagePath, IMREAD_GRAYSCALE);
 		if (img.empty()) {
 			sprintf(warningMSG, "%s %s", imagePath, IMAGE_NOT_EXIST_MSG);
@@ -157,6 +158,9 @@ sp::ImageProc::ImageProc(const SPConfig config) {
 		} else {
 			initPCAFromFile(config);
 		}
+	} catch (Exception& e) {
+		spLoggerPrintError(e.what(), __FILE__, __func__, __LINE__);
+		throw Exception();
 	} catch (...) {
 		spLoggerPrintError(GENERAL_ERROR_MSG, __FILE__, __func__, __LINE__);
 		throw Exception();

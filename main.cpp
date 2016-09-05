@@ -9,142 +9,244 @@
 
 using sp::ImageProc;
 
-extern "C"{
-//include your own C source files
+extern "C" {
 #include "SPPoint.h"
 #include "SPLogger.h"
 #include "SPConfig.h"
-#include "main_aux.h"
+#include "SPFeaturesSerializer.h"
+#include "SPKDTree.h"
+}
+
+/*
+ * creats logger according to information from config
+ *
+ * @para config
+ *
+ * @return SP_LOGGER_INVAlID_ARGUMENT - if config == NULL
+ * @return SP_LOGGER_DEFINED 			- The logger has been defined
+ * @return SP_LOGGER_OUT_OF_MEMORY 		- In case of memory allocation failure
+ * @return SP_LOGGER_CANNOT_OPEN_FILE 	- If the file given by filename cannot be opened
+ * @return SP_LOGGER_SUCCESS - if logger was created successfully
+ */
+SP_LOGGER_MSG createLogger(SPConfig config) {
+	char* filename;
+	int level;
+	SP_CONFIG_MSG msg = SP_CONFIG_SUCCESS;
+
+	level = spConfigGetLogLevel(config, &msg);
+	if (msg != SP_CONFIG_SUCCESS) {
+		return SP_LOGGER_INVAlID_ARGUMENT;
+	}
+
+	filename = spConfigGetLogName(config, &msg);
+	if (msg != SP_CONFIG_SUCCESS) {
+		return SP_LOGGER_INVAlID_ARGUMENT;
+	}
+
+	return spLoggerCreate(filename, (SP_LOGGER_LEVEL) level);
+}
+
+/*
+ * frees config and print errors
+ * @return 1
+ */
+int terminate(SPConfig config, SP_CONFIG_MSG msg) {
+	printf("Exiting...\n");
+
+	if (config != NULL) {
+		spConfigDestroy(config);
+	}
+	spLoggerDestroy();
+	exit(msg);
 }
 
 int main(int argc, char* argv[]) {
 	const char* filename = "spcbir.config"; //default name
-	SP_CONFIG_MSG* msg = NULL;
-	SP_LOGGER_MSG* logMsg = NULL;
+	SP_CONFIG_MSG msg;
+	SP_LOGGER_MSG logMsg;
 	SPConfig config = NULL;
-	char* imagePath = NULL;
+	char imagePath[MAX_PATH];
 	SPPoint* imFeatures = NULL;
-	int* numOfFeats = NULL;
-	char* query = NULL;
+	int numOfFeats;
 	int numOfImages;
 	int i;
 
 	/* should be at most 2 arguments: program name and config name */
-	if(argc > 2) {
-		printf("Invalid command line : use -c <config_filename>\n");
-	}
-	/* not sure if we really need to check that case */
-	if(strcmp(argv[0], ".\\SPFinalProject") != 0) {
-		printf("Invalid command line : use -c <config_filename>\n");
+	if (argc > 3) {
+		return terminate(NULL, SP_CONFIG_INVALID_COMMANDLINE);
 	}
 
 	/* the user entered config name, so default name shouldn't be used*/
-	if(argc == 2) {
-		filename = argv[1];
+	if (argc == 3) {
+		if (strcmp("-c", argv[1]) != 0) {
+			return terminate(NULL, SP_CONFIG_INVALID_COMMANDLINE);
+		}
+		filename = argv[2];
 	}
 
 	/** creating SPConfig **/
 
-	msg = (SP_CONFIG_MSG*) malloc(sizeof(SP_CONFIG_MSG));
-	if (msg == NULL) {
-		return terminate(config, msg);
-	}
+	config = spConfigCreate(filename, &msg);
 
-	config = spConfigCreate(filename, msg);
-
-	if(*msg == SP_CONFIG_CANNOT_OPEN_FILE) {
-		if(strcmp(filename, "spcbir.config") == 0) {
-			printf("The default configuration file spcbir.config couldn’t be open\n");
+	if (msg == SP_CONFIG_CANNOT_OPEN_FILE) {
+		if (strcmp(filename, "spcbir.config") == 0) {
+			printf(
+					"The default configuration file spcbir.config couldn’t be open\n");
 		} else {
 			printf("The configuration file <filename> couldn’t be open\n");
 		}
-		return terminate(config, msg);;
-	} else if (*msg != SP_CONFIG_SUCCESS) {
+		return terminate(config, msg);
+	} else if (msg != SP_CONFIG_SUCCESS) {
 		return terminate(config, msg);
 	}
 
 	/** creating SPLogger **/
 
-	*logMsg = createLogger(config);
-	if (*logMsg != SP_LOGGER_SUCCESS) {
-		return terminate(config, msg);
+	logMsg = createLogger(config);
+	if (logMsg != SP_LOGGER_SUCCESS) {
+		return terminate(config, SP_CONFIG_UNKNOWN_ERROR);
 	}
 
 	/** extracting features from images or from feats file **/
 
-	numOfFeats = (int*)malloc(sizeof(int));
-	if (numOfFeats == NULL) {
-		*msg = SP_CONFIG_ALLOC_FAIL;
-		spLoggerPrintError(allocFail, __FILE__, __func__, __LINE__);
-		return terminate(config, msg);
-	}
-
-	numOfImages = spConfigGetNumOfImages(config, msg);
+	numOfImages = spConfigGetNumOfImages(config, &msg);
 	ImageProc imageProc(config);
 
-	if (spConfigIsExtractionMode(config, msg)) {
-		for (i = 1; i <= numOfImages; i++) {
-			*msg = spConfigGetImagePath(imagePath, config, i);
-			if (*msg != SP_CONFIG_SUCCESS) {
+	if (spConfigIsExtractionMode(config, &msg)) {
+		for (i = 0; i < numOfImages; i++) {
+			msg = spConfigGetImagePath(imagePath, config, i);
+			if (msg != SP_CONFIG_SUCCESS) {
 				spLoggerPrintError(imPathErr, __FILE__, __func__, __LINE__);
-				free(numOfFeats);
 				return terminate(config, msg);
 			}
-			imFeatures = imageProc.getImageFeatures(imagePath, i, numOfFeats);
+			imFeatures = imageProc.getImageFeatures(imagePath, i, &numOfFeats);
 			if (imFeatures == NULL) {
 				spLoggerPrintError(unknownErr, __FILE__, __func__, __LINE__);
-				free(numOfFeats);
 				return terminate(config, msg);
 			}
 
-			createFeaturesFile(imFeatures, msg, numOfFeats, config, i);
+			msg = writeImageFeaturesToFile(imFeatures, numOfFeats, config, i);
+			if (msg != SP_CONFIG_SUCCESS) {
+				terminate(config, msg);
+			}
+			for (int j = 0; j<numOfFeats; j++) {
+				spPointDestroy(imFeatures[j]);
+			}
 			free(imFeatures);
 		}
-	} else if (!nonExtractionModeLegal(config, msg, numOfImages)) {
-		spLoggerPrintError(featsFileInvalid, __FILE__, __func__, __LINE__);
-		free(numOfFeats);
-		return terminate(config, msg);
 	}
 
-	free(numOfFeats);
+	SPPoint** featuresPerImage = (SPPoint**) malloc(sizeof(SPPoint*) * numOfImages);
+	VERIFY_ALLOC(featuresPerImage);
+	int* featureCountPerImage = (int*) malloc(sizeof(int) * numOfImages);
+	VERIFY_ALLOC(featureCountPerImage);
 
-	/** for each query find and present nearest images according to features **/
+	int totalFeatures = 0;
 
-	printf("Please enter an image path:\n");
-	while (gets(query) != NULL && strcmp(query, "<>") != 0) {
+	for (i = 0; i < numOfImages; i++) {
+		readImageFeaturesFromFile(&(featuresPerImage[i]),
+				&(featureCountPerImage[i]), config, i);
+		if (msg != SP_CONFIG_SUCCESS) {
+			terminate(config, msg);
+		}
+		totalFeatures += featureCountPerImage[i];
+	}
 
-		//TODO now we need to sort!
-		/*
-		 * 1 - store all features in KD-Tree
-		 * 2 - for each feature of query image, find the k-nearest features
-		 * 3 - for each image, keep track of the number of times it was among
-		 *     the nearest features
-		 * 4 - display the nearest images
-		 */
-
-		if (spConfigMinimalGui(config, msg)) {
-
-			for (i = 0; i < spConfigGetNumOfSimIms(config, msg); i++) {
-
-				imageProc.showImage(imagePath);
-				getchar();
-				//until user presses some key, the same image will
-				//show on screen
-				free(imagePath);
-			}
-		} else {
-			printf("Best candidates for - <query image path> - are:\n");
-
-			for (i = 0; i < spConfigGetNumOfSimIms(config, msg); i++) {
-
-				printf("%s\n", imagePath);
-				free(imagePath);
-			}
+	SPPoint* allFeatures = (SPPoint*) malloc(sizeof(SPPoint) * totalFeatures);
+	VERIFY_ALLOC(allFeatures);
+	int featureIndex = 0;
+	for (i = 0; i < numOfImages; i++) {
+		for (int j = 0; j < featureCountPerImage[i]; j++, featureIndex++) {
+			allFeatures[featureIndex] = featuresPerImage[i][j];
 		}
 	}
 
+	SPKDArray* kdArray = spKDArrayInit(allFeatures, totalFeatures,
+			spConfigGetPCADim(config, &msg));
+	VERIFY_ALLOC(kdArray);
 
-	return terminate(config, msg);
+	free(allFeatures);
+	for (i = 0; i < numOfImages; i++) {
+		for (int j = 0; j < featureCountPerImage[i]; j++, featureIndex++) {
+			spPointDestroy(featuresPerImage[i][j]);
+		}
+		free(featuresPerImage[i]);
+	}
+	free(featuresPerImage);
+	free(featureCountPerImage);
+
+	SPKDTreeNode* kdTree = spKDTreeInit(kdArray,
+			spConfigGetSplitMethod(config, &msg));
+	VERIFY_ALLOC(kdTree);
+	spKDArrayDestroy(kdArray);
+
+	char queryPath[MAX_PATH];
+
+	while (true) {
+		printf("Please enter an image path:\n");
+
+		if (gets(queryPath) == NULL || strcmp(queryPath, "<>") == 0) {
+			break;
+		}
+
+		int queryNumOfFeats;
+		SPPoint* queryFeats = imageProc.getImageFeatures(queryPath, -1,
+				&queryNumOfFeats);
+		if (queryFeats == NULL) {
+			spLoggerPrintError(unknownErr, __FILE__, __func__, __LINE__);
+			terminate(config, SP_CONFIG_UNKNOWN_ERROR);
+		}
+
+		int* histogram = (int*) calloc(sizeof(int), numOfImages);
+		VERIFY_ALLOC(histogram);
+
+		for (i = 0; i < queryNumOfFeats; i++) {
+
+			SPBPQueue queue = spKDTreeNearestNeighbor(kdTree, queryFeats[i],
+					spConfigGetSpKNN(config, &msg));
+			while (!spBPQueueIsEmpty(queue)) {
+				SPListElement element = spBPQueuePeek(queue);
+				int imageIndex = spListElementGetIndex(element);
+				histogram[imageIndex]++;
+				spListElementDestroy(element);
+				spBPQueueDequeue(queue);
+			}
+			spBPQueueDestroy(queue);
+		}
+
+		int simIms = spConfigGetNumOfSimIms(config, &msg);
+		for (i = 0; i < simIms; i++) {
+
+			int maxImageIndex = 0;
+			for (int j = 1; j < numOfImages; j++) {
+				if (histogram[maxImageIndex] < histogram[j]) {
+					maxImageIndex = j;
+				}
+			}
+			histogram[maxImageIndex] = -1;
+
+			msg = spConfigGetImagePath(imagePath, config, maxImageIndex);
+			if (msg != SP_CONFIG_SUCCESS) {
+				terminate(config, msg);
+			}
+
+			if (spConfigMinimalGui(config, &msg)) {
+				imageProc.showImage(imagePath);
+				getchar();
+				//until user presses some key, the same image will show on screen
+			} else {
+				if (i == 0) {
+					printf("Best candidates for - %s - are:\n", queryPath);
+				}
+
+				printf("%s\n", imagePath);
+			}
+		}
+
+		free(histogram);
+
+		spKDTreeDestroy(kdTree);
+	}
+
+	return terminate(config, SP_CONFIG_SUCCESS);
 }
-
-

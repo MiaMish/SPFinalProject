@@ -24,6 +24,14 @@
  * spLoggerPrintMsg     - Prints the exact message at any level (Without formatting)
  */
 
+/** error massages for logger **/
+#define featsPathErr "can't get path of feature file\n"
+#define featsFileErr "can't open features file\n"
+#define featsFileInvalid "the features file for one of the images is invalid\n"
+#define allocFail "memory allocation failure\n"
+#define imPathErr "can't get path of image\n"
+#define unknownErr "unknown error\n"
+
 /** A type used to decide the level of the logger**/
 typedef enum sp_logger_level_t {
 	SP_LOGGER_ERROR_LEVEL = 1, //Error level
