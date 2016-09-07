@@ -302,7 +302,7 @@ char* spConfigGetPCAFilename(const SPConfig config, SP_CONFIG_MSG* msg) {
 
 SplitMethod spConfigGetSplitMethod(const SPConfig config, SP_CONFIG_MSG* msg) {
 	if (!getterAssert(config, msg, __func__)) {
-		return NULL;
+		return RANDOM;
 	}
 	return config->spKDTreeSplitMethod;
 }

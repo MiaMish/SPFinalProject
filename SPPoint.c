@@ -40,10 +40,6 @@ SPPoint spPointCopy(SPPoint source) {
 	int dim;
 	int index;
 
-	//ASSERT_NULL(source, "ASSERTION FAILED :: source is NULL");
-	if (source == NULL) {
-		return NULL;
-	}
 	assert(source != NULL);
 
 	data = source->coordinates;
@@ -64,7 +60,6 @@ void spPointDestroy(SPPoint point) {
  * c is stupid
  */
 int spPointGetDimension(SPPoint point) {
-	//ASSERT_NULL(point, "ASSERTION FAILED :: point is NULL");
 	assert(point != NULL);
 	return point->dimension;
 }

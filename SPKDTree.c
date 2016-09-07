@@ -21,13 +21,13 @@ struct SPKDTreeNode {
 	SPPoint leaf;
 };
 
-int randomDimension(int max)
-{
-       double scaled = (double)rand()/RAND_MAX;
-       return max*scaled + 1;
+int randomDimension(int max) {
+	double scaled = (double) rand() / RAND_MAX;
+	return max * scaled;
 }
 
-SPKDTreeNode* Init(SPKDArray* kdArr, SplitMethod splitMethod, int parentSplittingDimension) {
+SPKDTreeNode* Init(SPKDArray* kdArr, SplitMethod splitMethod,
+		int parentSplittingDimension) {
 	SPKDTreeNode* root = (SPKDTreeNode*) malloc(sizeof(SPKDTreeNode));
 	NULL_CHECK(root, root);
 
@@ -45,16 +45,16 @@ SPKDTreeNode* Init(SPKDArray* kdArr, SplitMethod splitMethod, int parentSplittin
 	int arrayDimension = spKDArrayGetDimension(kdArr);
 
 	switch (splitMethod) {
-		case MAX_SPREAD:
-			splittingDimension = spKDArrayFindMaxSpreadDimension(kdArr);
-			break;
-		case RANDOM:
-			splittingDimension = randomDimension(arrayDimension);
-			break;
+	case MAX_SPREAD:
+		splittingDimension = spKDArrayFindMaxSpreadDimension(kdArr);
+		break;
+	case RANDOM:
+		splittingDimension = randomDimension(arrayDimension);
+		break;
 
-		case INCREMENTAL:
-			splittingDimension = (parentSplittingDimension + 1) % arrayDimension;
-			break;
+	case INCREMENTAL:
+		splittingDimension = (parentSplittingDimension + 1) % arrayDimension;
+		break;
 	}
 
 	SPKDArray* leftArr = NULL;
@@ -65,9 +65,9 @@ SPKDTreeNode* Init(SPKDArray* kdArr, SplitMethod splitMethod, int parentSplittin
 
 	root->dim = splittingDimension;
 	root->medianValue = spKDArrayGetMedian(kdArr, splittingDimension);
-	root->left = Init(leftArr, splitMethod, splittingDimension);
+	root->left = Init(leftArr, splitMethod, splittingDimension + 1);
 	NULL_CHECK(root->left, root);
-	root->right = Init(rightArr, splitMethod, splittingDimension);
+	root->right = Init(rightArr, splitMethod, splittingDimension + 1);
 	NULL_CHECK(root->right, root);
 	root->leaf = NULL;
 
@@ -78,7 +78,7 @@ SPKDTreeNode* Init(SPKDArray* kdArr, SplitMethod splitMethod, int parentSplittin
 }
 
 SPKDTreeNode* spKDTreeInit(SPKDArray* kdArr, SplitMethod splitMethod) {
-	return Init(kdArr, splitMethod, 0);
+	return Init(kdArr, splitMethod, -1);
 }
 
 void spKDTreeDestroy(SPKDTreeNode* root) {
@@ -113,8 +113,7 @@ void neighborSearch(SPKDTreeNode* root, SPBPQueue bpq, SPPoint point) {
 	if (pointValue <= root->medianValue) {
 		firstToSearch = root->left;
 		secondToSearch = root->right;
-	}
-	else {
+	} else {
 		firstToSearch = root->right;
 		secondToSearch = root->left;
 	}
@@ -132,7 +131,8 @@ void neighborSearch(SPKDTreeNode* root, SPBPQueue bpq, SPPoint point) {
 	}
 }
 
-SPBPQueue spKDTreeNearestNeighbor(SPKDTreeNode* root, SPPoint testPoint, int neighborsCount) {
+SPBPQueue spKDTreeNearestNeighbor(SPKDTreeNode* root, SPPoint testPoint,
+		int neighborsCount) {
 	SPBPQueue bpq = spBPQueueCreate(neighborsCount);
 	if (bpq == NULL) {
 		return NULL;

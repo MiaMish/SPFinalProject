@@ -136,7 +136,7 @@ void spKDArraySplit(SPKDArray* kdArr, int coor, SPKDArray** kdLeft,
 	SPPoint* leftPoints = (SPPoint*) calloc(leftSize, sizeof(SPPoint));
 	SPPoint* rightPoints = (SPPoint*) calloc(rightSize, sizeof(SPPoint));
 
-	if (leftMap == NULL || rightMap == NULL) {
+	if (leftMap == NULL || rightMap == NULL || leftPoints == NULL || rightPoints == NULL) {
 		SPLIT_CLEANUP(leftMap, rightMap, leftPoints, rightPoints, NULL, NULL);
 		return;
 	}
@@ -168,9 +168,11 @@ void spKDArraySplit(SPKDArray* kdArr, int coor, SPKDArray** kdLeft,
 		for (int j = 0; j < kdArr->pointsCount; j++) {
 			int currIndex = kdArr->sortedIndices[i][j];
 			if (leftMap[currIndex] > 0) {
+				assert(leftMap[currIndex] <= leftSize);
 				(*kdLeft)->sortedIndices[i][leftSpot] = leftMap[currIndex] - 1;
 				leftSpot++;
 			} else if (rightMap[currIndex] > 0) {
+				assert(rightMap[currIndex] <= rightSize);
 				(*kdRight)->sortedIndices[i][rightSpot] = rightMap[currIndex] - 1;
 				rightSpot++;
 			} else {
