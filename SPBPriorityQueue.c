@@ -132,13 +132,10 @@ double spBPQueueMinValue(SPBPQueue source){
 
 
 double spBPQueueMaxValue(SPBPQueue source){
-	int cnt = 0;
-	SPListElement node = spListGetFirst(source->list);
-	while(cnt < spListGetSize(source->list) - 1){
-		node = spListGetNext(source->list);
-		cnt++;
-	}
-	return spListElementGetValue(node);
+	SPListElement element = spBPQueuePeekLast(source);
+	double value = spListElementGetValue(element);
+	spListElementDestroy(element);
+	return value;
 }
 
 

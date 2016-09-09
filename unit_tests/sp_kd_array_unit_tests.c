@@ -35,12 +35,11 @@ void killPoints(SPPoint* points) {
 	free(points);
 }
 
-bool assertPointsEquals(SPPoint a, SPPoint b) {
-	for (int i = 0; i < POINTS_DIM; i++) {
-		ASSERT_EQUALS(spPointGetAxisCoor(a, i), spPointGetAxisCoor(b, i));
+#define assertPointsEquals(a,b)   \
+	for (int ii = 0; ii < POINTS_DIM; ii++) {   \
+		ASSERT_EQUALS(spPointGetAxisCoor(a, ii), spPointGetAxisCoor(b, ii));   \
 	}
-	return true;
-}
+
 
 //Checks if init and destroy works
 bool InitAndDestroyArray() {

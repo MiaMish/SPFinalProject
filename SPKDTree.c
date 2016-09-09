@@ -10,6 +10,7 @@
 #include <limits.h>
 #include "SPKDTree.h"
 #include <math.h>
+#include <assert.h>
 
 #define NULL_CHECK(val, tree) if (val == NULL) { spKDTreeDestroy(tree); return NULL; }
 
@@ -47,9 +48,12 @@ SPKDTreeNode* Init(SPKDArray* kdArr, SplitMethod splitMethod,
 	switch (splitMethod) {
 	case MAX_SPREAD:
 		splittingDimension = spKDArrayFindMaxSpreadDimension(kdArr);
+		assert(splittingDimension < arrayDimension);
 		break;
+
 	case RANDOM:
 		splittingDimension = randomDimension(arrayDimension);
+		assert(splittingDimension < arrayDimension);
 		break;
 
 	case INCREMENTAL:
@@ -65,9 +69,9 @@ SPKDTreeNode* Init(SPKDArray* kdArr, SplitMethod splitMethod,
 
 	root->dim = splittingDimension;
 	root->medianValue = spKDArrayGetMedian(kdArr, splittingDimension);
-	root->left = Init(leftArr, splitMethod, splittingDimension + 1);
+	root->left = Init(leftArr, splitMethod, splittingDimension);
 	NULL_CHECK(root->left, root);
-	root->right = Init(rightArr, splitMethod, splittingDimension + 1);
+	root->right = Init(rightArr, splitMethod, splittingDimension);
 	NULL_CHECK(root->right, root);
 	root->leaf = NULL;
 
@@ -120,13 +124,9 @@ void neighborSearch(SPKDTreeNode* root, SPBPQueue bpq, SPPoint point) {
 
 	neighborSearch(firstToSearch, bpq, point);
 
-	if (spBPQueueIsFull(bpq)) {
-		return;
-	}
-
 	double maxVal = spBPQueueMaxValue(bpq);
-	double diff = pow(pointValue - root->medianValue, 2);
-	if (diff < maxVal) {
+	double diff = (pointValue - root->medianValue) * (pointValue - root->medianValue);
+	if (!spBPQueueIsFull(bpq) || diff < maxVal) {
 		neighborSearch(secondToSearch, bpq, point);
 	}
 }

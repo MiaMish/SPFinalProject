@@ -105,6 +105,10 @@ int pointsComparator(const void* ptr1, const void* ptr2) {
 	double coor2 = spPointGetAxisCoor(currentKdArr->points[index2],
 			currentAxis);
 
+	if (coor1 == coor2) {
+		return index1 - index2;
+	}
+
 	return coor1 - coor2;
 }
 
@@ -213,8 +217,7 @@ int spKDArrayFindMaxSpreadDimension(SPKDArray* kdArr) {
 		double minPointVal = INT_MAX;
 		double maxPointVal = INT_MIN;
 		for (int j = 0; j < kdArr->pointsCount; j++) {
-			int index = kdArr->sortedIndices[i][j];
-			double currVal = spPointGetAxisCoor(kdArr->points[index], i);
+			double currVal = spPointGetAxisCoor(kdArr->points[j], i);
 			if (currVal < minPointVal) {
 				minPointVal = currVal;
 			}
@@ -233,6 +236,7 @@ int spKDArrayFindMaxSpreadDimension(SPKDArray* kdArr) {
 }
 
 double spKDArrayGetMedian(SPKDArray* kdArr, int axis) {
+	assert(kdArr->pointsCount >= 2);
 	int meanIndex = kdArr->sortedIndices[axis][(kdArr->pointsCount - 1) / 2];
 	SPPoint meanPoint = kdArr->points[meanIndex];
 	return spPointGetAxisCoor(meanPoint, axis);

@@ -205,7 +205,7 @@ int main(int argc, char* argv[]) {
 			SPBPQueue queue = spKDTreeNearestNeighbor(kdTree, queryFeats[i],
 					spConfigGetSpKNN(config, &msg));
 			while (!spBPQueueIsEmpty(queue)) {
-				SPListElement element = spBPQueuePeek(queue);
+				SPListElement element = spBPQueuePeekLast(queue);
 				int imageIndex = spListElementGetIndex(element);
 				histogram[imageIndex]++;
 				spListElementDestroy(element);
