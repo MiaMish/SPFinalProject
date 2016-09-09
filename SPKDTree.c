@@ -10,6 +10,7 @@
 #include <limits.h>
 #include "SPKDTree.h"
 #include <math.h>
+#include <assert.h>
 
 #define NULL_CHECK(val, tree) if (val == NULL) { spKDTreeDestroy(tree); return NULL; }
 
@@ -21,13 +22,13 @@ struct SPKDTreeNode {
 	SPPoint leaf;
 };
 
-int randomDimension(int max)
-{
-       double scaled = (double)rand()/RAND_MAX;
-       return max*scaled + 1;
+int randomDimension(int max) {
+	double scaled = (double) rand() / RAND_MAX;
+	return max * scaled;
 }
 
-SPKDTreeNode* Init(SPKDArray* kdArr, SplitMethod splitMethod, int parentSplittingDimension) {
+SPKDTreeNode* Init(SPKDArray* kdArr, SplitMethod splitMethod,
+		int parentSplittingDimension) {
 	SPKDTreeNode* root = (SPKDTreeNode*) malloc(sizeof(SPKDTreeNode));
 	NULL_CHECK(root, root);
 
@@ -45,20 +46,22 @@ SPKDTreeNode* Init(SPKDArray* kdArr, SplitMethod splitMethod, int parentSplittin
 	int arrayDimension = spKDArrayGetDimension(kdArr);
 
 	switch (splitMethod) {
-		case MAX_SPREAD:
-			splittingDimension = spKDArrayFindMaxSpreadDimension(kdArr);
-			break;
-		case RANDOM:
-			splittingDimension = randomDimension(arrayDimension);
-			break;
+	case MAX_SPREAD:
+		splittingDimension = spKDArrayFindMaxSpreadDimension(kdArr);
+		assert(splittingDimension < arrayDimension);
+		break;
 
-		case INCREMENTAL:
-			splittingDimension = (parentSplittingDimension + 1) % arrayDimension;
-			break;
+	case RANDOM:
+		splittingDimension = randomDimension(arrayDimension);
+		assert(splittingDimension < arrayDimension);
+		break;
 
-		case UNDEFINED:
-			//TODO: such case should not exist. needs to announce error
-			break;
+	case INCREMENTAL:
+		splittingDimension = (parentSplittingDimension + 1) % arrayDimension;
+		break;
+	case UNDEFINED:
+		//TODO: such case should not exist. needs to announce error
+		break;
 	}
 
 	SPKDArray* leftArr = NULL;
@@ -82,7 +85,7 @@ SPKDTreeNode* Init(SPKDArray* kdArr, SplitMethod splitMethod, int parentSplittin
 }
 
 SPKDTreeNode* spKDTreeInit(SPKDArray* kdArr, SplitMethod splitMethod) {
-	return Init(kdArr, splitMethod, 0);
+	return Init(kdArr, splitMethod, -1);
 }
 
 void spKDTreeDestroy(SPKDTreeNode* root) {
@@ -117,26 +120,22 @@ void neighborSearch(SPKDTreeNode* root, SPBPQueue bpq, SPPoint point) {
 	if (pointValue <= root->medianValue) {
 		firstToSearch = root->left;
 		secondToSearch = root->right;
-	}
-	else {
+	} else {
 		firstToSearch = root->right;
 		secondToSearch = root->left;
 	}
 
 	neighborSearch(firstToSearch, bpq, point);
 
-	if (spBPQueueIsFull(bpq)) {
-		return;
-	}
-
 	double maxVal = spBPQueueMaxValue(bpq);
-	double diff = pow(pointValue - root->medianValue, 2);
-	if (diff < maxVal) {
+	double diff = (pointValue - root->medianValue) * (pointValue - root->medianValue);
+	if (!spBPQueueIsFull(bpq) || diff < maxVal) {
 		neighborSearch(secondToSearch, bpq, point);
 	}
 }
 
-SPBPQueue spKDTreeNearestNeighbor(SPKDTreeNode* root, SPPoint testPoint, int neighborsCount) {
+SPBPQueue spKDTreeNearestNeighbor(SPKDTreeNode* root, SPPoint testPoint,
+		int neighborsCount) {
 	SPBPQueue bpq = spBPQueueCreate(neighborsCount);
 	if (bpq == NULL) {
 		return NULL;

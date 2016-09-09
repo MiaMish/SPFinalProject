@@ -40,7 +40,7 @@ SP_CONFIG_MSG writeImageFeaturesToFile(SPPoint* imFeatures, int numOfFeats,
 		fprintf(featsFile, "%d,%d\n", spPointGetIndex(point),
 				spPointGetDimension(point));
 		for (int j = 0; j < spPointGetDimension(point); j++) {
-			fprintf(featsFile, "%lf\n", spPointGetAxisCoor(point, j));
+			fprintf(featsFile, "%f\n", spPointGetAxisCoor(point, j));
 		}
 	}
 

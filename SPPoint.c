@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include <math.h>
 
 #include "SPPoint.h"
 
@@ -40,10 +41,6 @@ SPPoint spPointCopy(SPPoint source) {
 	int dim;
 	int index;
 
-	//ASSERT_NULL(source, "ASSERTION FAILED :: source is NULL");
-	if (source == NULL) {
-		return NULL;
-	}
 	assert(source != NULL);
 
 	data = source->coordinates;
@@ -64,7 +61,6 @@ void spPointDestroy(SPPoint point) {
  * c is stupid
  */
 int spPointGetDimension(SPPoint point) {
-	//ASSERT_NULL(point, "ASSERTION FAILED :: point is NULL");
 	assert(point != NULL);
 	return point->dimension;
 }
@@ -83,22 +79,17 @@ double spPointGetAxisCoor(SPPoint point, int axis) {
 }
 
 double spPointL2SquaredDistance(SPPoint p, SPPoint q) {
-	int distance = 0;
-	double* pData;
-	double* qData;
-	int diff;
-	int i;
+	double distance = 0;
 
 	assert(p != NULL);
 	assert(q != NULL);
 	assert(p->dimension == q->dimension);
 
-	pData = p->coordinates;
-	qData = q->coordinates;
-	for (i = 0; i < p->dimension; i++) {
-		diff = pData[i] - qData[i];
+	double* pData = p->coordinates;
+	double* qData = q->coordinates;
+	for (int i = 0; i < p->dimension; i++) {
+		double diff = pData[i] - qData[i];
 		distance += diff*diff;
-		diff = 0;
 	}
 	return distance;
 }

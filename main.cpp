@@ -61,6 +61,8 @@ int terminate(SPConfig config, SP_CONFIG_MSG msg) {
 }
 
 int main(int argc, char* argv[]) {
+	setvbuf (stdout, NULL, _IONBF, BUFSIZ);
+
 	const char* filename = "spcbir.config"; //default name
 	SP_CONFIG_MSG msg;
 	SP_LOGGER_MSG logMsg;
@@ -90,8 +92,7 @@ int main(int argc, char* argv[]) {
 
 	if (msg == SP_CONFIG_CANNOT_OPEN_FILE) {
 		if (strcmp(filename, "spcbir.config") == 0) {
-			printf(
-					"The default configuration file spcbir.config couldn’t be open\n");
+			printf("The default configuration file spcbir.config couldn’t be open\n");
 		} else {
 			printf("The configuration file <filename> couldn’t be open\n");
 		}
@@ -190,8 +191,7 @@ int main(int argc, char* argv[]) {
 		}
 
 		int queryNumOfFeats;
-		SPPoint* queryFeats = imageProc.getImageFeatures(queryPath, -1,
-				&queryNumOfFeats);
+		SPPoint* queryFeats = imageProc.getImageFeatures(queryPath, 0,	&queryNumOfFeats);
 		if (queryFeats == NULL) {
 			spLoggerPrintError(unknownErr, __FILE__, __func__, __LINE__);
 			terminate(config, SP_CONFIG_UNKNOWN_ERROR);
@@ -205,7 +205,7 @@ int main(int argc, char* argv[]) {
 			SPBPQueue queue = spKDTreeNearestNeighbor(kdTree, queryFeats[i],
 					spConfigGetSpKNN(config, &msg));
 			while (!spBPQueueIsEmpty(queue)) {
-				SPListElement element = spBPQueuePeek(queue);
+				SPListElement element = spBPQueuePeekLast(queue);
 				int imageIndex = spListElementGetIndex(element);
 				histogram[imageIndex]++;
 				spListElementDestroy(element);
@@ -244,9 +244,9 @@ int main(int argc, char* argv[]) {
 		}
 
 		free(histogram);
-
-		spKDTreeDestroy(kdTree);
 	}
+
+	spKDTreeDestroy(kdTree);
 
 	return terminate(config, SP_CONFIG_SUCCESS);
 }
