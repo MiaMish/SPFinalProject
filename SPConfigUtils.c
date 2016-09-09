@@ -50,16 +50,21 @@ int convertFieldToNum(char* field) {
 
 int convertStringToNum(char str[]) {
 	int i = 0;
+	if (str[0] == '+') {
+		i = 1;
+	}
 	while (str[i] != '\n' && str[i] != EOF && str[i] != '\0') {
 		if (!isdigit(str[i])) {
-			if (i != 0 || str[i] != '+') { //+int is allowed
-				return -1;
-			}
+			return -1;
 		}
 		i++;
 	}
 	if (i == 0) {
 		return -1;
+	}
+	if (str[0] ==  '+') {
+		// +num is allowed
+		return atoi(&str[1]);
 	}
 	return atoi(str);
 }
@@ -72,6 +77,8 @@ const char* convertMethodToString(SplitMethod method) {
 		return "MAX_SPREAD";
 	case 2:
 		return "INCREMENTAL";
+	case 3:
+		return "UNDEFINED";
 	}
 
 	/*shouldn't get to this line */
@@ -102,25 +109,70 @@ const char* convertTypeToString(ImageType type) {
 /*
  * return 0 - line is empty or a comment
  * return -1 if line format is not field = value
+ * return convertFieldToNum(field) if line is in correct format
  */
 int extractFieldAndValue(const char* line, char* value) {
+	char field[MAX_SIZE] = {'\0'};
+	int i = 0;
+	int count = 0;
+	int fieldId;
 
+	while (line[i] == ' ') {
+		i++;
+	}
 
-	if (line[0] == '#' || line[0] == '\n') {
+	//comment lines or empty lines are allowed
+	if (line[i] == '#' || line[i] == '\n' || line[i] == EOF) {
 		return 0;
 	}
 
-	char field[MAX_SIZE];
+	//extracting the first string (field) from line
+	while (line[i] != '\n' && line[i] != '\0' && line[i] != EOF &&
+			line[i] != ' ' && line[i] != '=' && i < MAX_SIZE) {
+		field[count] = line[i];
+		count++;
+		i++;
+	}
+	value[count] = '\0';
 
-	if (!sscanf(line, "%s = %s", field, value)) {
+	fieldId = convertFieldToNum(field);
+	if (fieldId == -1) {
 		return -1;
 	}
 
-	if (field[0] == '#') {
-		return 0;
+	//making sure the next character not ' ' is '='
+	while (line[i] == ' ' && i < MAX_SIZE) {
+		i++;
 	}
 
-	int fieldId = convertFieldToNum(field);
+	if (line[i] != '=') {
+		return -1;
+	}
+
+	//extracting the second string from line
+	count = 0;
+	i++; //the previous character '=' isn't part of the value
+	while (line[i] == ' ' && i < MAX_SIZE) {
+		i++;
+	}
+
+	while (line[i] != '\n' && line[i] != EOF && line[i] != ' ' && line[i] != '=') {
+		value[count] = line[i];
+		count++;
+		i++;
+	}
+	if(count == 0) {
+		fieldId = -1;
+	}
+	value[count] = '\0';
+
+	while (line[i] != '\n' && line[i] != '\0' && line[i] != EOF && i < MAX_SIZE) {
+		if (line[i] != ' ') {
+			return -1;
+		}
+		i++;
+	}
+
 	return fieldId;
 }
 

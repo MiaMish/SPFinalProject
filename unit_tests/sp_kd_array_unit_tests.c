@@ -189,7 +189,7 @@ bool SplitArray() {
 	return true;
 }
 
-int main17() {
+/*int main17() {
 	setbuf(stdout, NULL);
 	RUN_TEST(InitAndDestroyArray);
 	RUN_TEST(GetPointsCount);
@@ -200,5 +200,5 @@ int main17() {
 	RUN_TEST(FindMaxSpreadDimension);
 	RUN_TEST(SplitArray);
 	return 0;
-}
+}*/
 

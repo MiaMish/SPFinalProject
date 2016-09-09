@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include "sp_config_utils_unit_tests.h"
 #include "../SPConfig.h"
 #include "../SPConfigUtils.h"
 #include "../SPLogger.h"
@@ -17,26 +18,26 @@
 bool spConfigBasicTest1() {
 	SPConfig config;
 	SP_CONFIG_MSG* msg;
-	char* configFilename = "./files_for_unit_tests/configExample1.txt";
+	char* configFilename = (char*) "./files_for_unit_tests/configExample1.txt";
 
-	char* expDir = "./images/";
-	char* expPrefix = "img";
-	char* expSuffix = ".png";
+	char* expDir = (char*) "./images/";
+	char* expPrefix = (char*) "img";
+	char* expSuffix = (char*) ".png";
 	int expNumOfIm = 17;
 	int expPCADim = 20;
-	char* expPCAFilename = "pca.yml";
+	char* expPCAFilename = (char*) "pca.yml";
 	int expNumOfFeatures = 100;
 	bool expExtrMode = true;
 	bool expMinimalGui = false;
 	int expNumOfSimIm = 5;
-	char* expLoggerFilename = "stdout";
-	int expLoggerLevel = 2;
+	char* expLoggerFilename = (char*) "stdout";
+	int expLoggerLevel = 3;
 	SplitMethod expMethod = MAX_SPREAD;
 
 	msg = (SP_CONFIG_MSG*) malloc(sizeof(SP_CONFIG_MSG));
-	ASSERT_FALSE(msg);
+	ASSERT_FALSE(msg == NULL);
 	config = spConfigCreate(configFilename, msg);
-	ASSERT_FALSE(config);
+	ASSERT_FALSE(config == NULL);
 
 	ASSERT_TRUE(spConfigIsExtractionMode(config, msg) == expExtrMode);
 	ASSERT_TRUE(spConfigMinimalGui(config, msg) == expMinimalGui);
@@ -56,5 +57,11 @@ bool spConfigBasicTest1() {
 	ASSERT_TRUE(spConfigGetSplitMethod(config, msg) == expMethod);
 
 	return true;
+}
+
+int main_config_test() {
+	RUN_TEST(spConfigBasicTest1);
+
+	return 1;
 }
 

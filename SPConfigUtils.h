@@ -12,7 +12,7 @@
 
 /** the options for the cut method when the kd-tree is build **/
 typedef enum sp_methods {
-	RANDOM = 0, MAX_SPREAD = 1, INCREMENTAL = 2
+	RANDOM = 0, MAX_SPREAD = 1, INCREMENTAL = 2, UNDEFINED = 3
 } SplitMethod;
 
 /** the options for the image suffix **/
@@ -21,7 +21,7 @@ typedef enum imageTypes {
 } ImageType;
 
 #define MAX_SIZE 1024
-#define sizeOfSplitMethod 3
+#define sizeOfSplitMethod 4
 #define sizeOfImageType 4
 
 /*

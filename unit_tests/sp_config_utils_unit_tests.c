@@ -17,19 +17,19 @@
  */
 
 bool stringToIntTest() {
-	char* str1 = "abd";
-	char* str2 = "145";
-	char* str3 = "+2";
-	char* str4 = "1.0";
-	char* str5 = "14d";
-	char* str6 = "-156";
-	char* str7 = "";
-	char* str8 = "\n";
+	char* str1 = (char*) "abd";
+	char* str2 = (char*) "145";
+	char* str3 = (char*) "+2";
+	char* str4 = (char*) "1.0";
+	char* str5 = (char*) "14d";
+	char* str6 = (char*) "-156";
+	char* str7 = (char*) "";
+	char* str8 = (char*) "\n";
 	int num1 = -1;
 	int num2 = 145;
 	int num3 = 2;
 	int num4 = -1;
-	int num5 = -156;
+	int num5 = -1;
 	int num6 = -1;
 	int num7 = -1;
 	int num8 = -1;
@@ -46,27 +46,30 @@ bool stringToIntTest() {
 }
 
 bool fieldToNumTest() {
-	char* str1 = "abd";
-	char* str2 = "";
-	char* str3 = "\t";
-	char* str4 = "spImagesPrefix ";
+	char* str1 = (char*) "abd";
+	char* str2 = (char*) "";
+	char* str3 = (char*) "\t";
+	char* str4 = (char*) "spImagesPrefix";
+	char* str5 = (char*) "spImagesPrefix ";
 
 	int num1 = -1;
 	int num2 = -1;
 	int num3 = -1;
 	int num4 = 2;
+	int num5 = -1;
 
 	ASSERT_TRUE(convertFieldToNum(str1) == num1);
 	ASSERT_TRUE(convertFieldToNum(str2) == num2);
 	ASSERT_TRUE(convertFieldToNum(str3) == num3);
 	ASSERT_TRUE(convertFieldToNum(str4) == num4);
+	ASSERT_TRUE(convertFieldToNum(str5) == num5);
 	return true;
 }
 
 bool methodToStringTest() {
-	char* str1 = "RANDOM";
-	char* str2 = "MAX_SPREAD";
-	char* str3 = "INCREMENTAL";
+	char* str1 = (char*) "RANDOM";
+	char* str2 = (char*) "MAX_SPREAD";
+	char* str3 = (char*) "INCREMENTAL";
 
 	const char* res1 = convertMethodToString(RANDOM);
 	const char* res2 = convertMethodToString(MAX_SPREAD);
@@ -80,10 +83,10 @@ bool methodToStringTest() {
 }
 
 bool typeToStringTest() {
-	char* str1 = ".jpg";
-	char* str2 = ".png";
-	char* str3 = ".bmp";
-	char* str4 = ".gif";
+	char* str1 = (char*) ".jpg";
+	char* str2 = (char*) ".png";
+	char* str3 = (char*) ".bmp";
+	char* str4 = (char*) ".gif";
 
 	const char* res1 = convertTypeToString(jpg);
 	const char* res2 = convertTypeToString(png);
@@ -99,34 +102,41 @@ bool typeToStringTest() {
 }
 
 bool extractFieldAndValueTest() {
-	char* filename = "./files_for_unit_tests/extractFieldAndValueTest.txt";
+	char* filename = (char*) "./files_for_unit_tests/extractFieldAndValueTest.txt";
 	FILE* file = fopen(filename, "r");
-	char* line = (char*) malloc(sizeof(char) * 1024);
-	char* value = (char*) malloc(sizeof(char) * 1024);
+	char line[MAX_SIZE];
+	char value[MAX_SIZE];
 	int fieldId;
 	int i;
+	int j;
 
-	ASSERT_FALSE(file);
-	ASSERT_FALSE(line);
-	ASSERT_FALSE(value);
+	ASSERT_FALSE(file == NULL);
+	ASSERT_FALSE(line == NULL);
+	ASSERT_FALSE(value == NULL);
 
-	int fieldIdRes[25] = {0, -1, -1, -1, -1, 0, 1, 3, 11, 0, 0, 12, 12, 2,
-			3, 4, 5, 6, 7, 8, 9, 10, 13, 14};
+	int fieldIdRes[25] = {0, -1, -1, -1, -1, 0, 1, 3, 11, 0, 0, 12, 12, 1,
+			2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14};
 
 	for(i = 0; i < 25; i++) {
-		fgets(line, 1024, file);
+		for (j = 0; j < MAX_SIZE; j++) {
+			line[j] = '\0';
+			value[j] = '\0';
+		}
+
+		if (fgets(line, 1024, file) == NULL) {
+			break;
+		}
+
 		fieldId = extractFieldAndValue(line, value);
 		ASSERT_TRUE(fieldId == fieldIdRes[i]);
 	}
 
-	free(line);
-	free(value);
 	fclose(file);
 	return true;
 }
 
 
-int main_test() {
+int main_utils_test() {
 	RUN_TEST(stringToIntTest);
 	RUN_TEST(fieldToNumTest);
 	RUN_TEST(methodToStringTest);
