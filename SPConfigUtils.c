@@ -1,8 +1,5 @@
 /*
  * SPUtils.c
- *
- *  Created on: 23 баев„ 2016
- *      Author: user
  */
 
 

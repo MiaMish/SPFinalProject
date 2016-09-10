@@ -160,13 +160,13 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 
 	fclose(file);
 
-	if (strlen(config->spImagesDirectory) == 0) {
+	if (strcmp(config->spImagesDirectory, "") == 0) {
 		*msg = SP_CONFIG_MISSING_DIR;
 		printError(filename, lineCounter, directoryNotSet);
-	} else if (strlen(config->spImagesPrefix) == 0) {
+	} else if (strcmp(config->spImagesPrefix, "") == 0) {
 		*msg = SP_CONFIG_MISSING_PREFIX;
 		printError(filename, lineCounter, preffixNotSet);
-	} else if (strlen(config->spImagesSuffix) == 0) {
+	} else if (strcmp(config->spImagesSuffix, "") == 0) {
 		*msg = SP_CONFIG_MISSING_SUFFIX;
 		printError(filename, lineCounter, suffixNotSet);
 	} else if (config->spNumOfImages == -1) {
@@ -497,6 +497,9 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 }
 
 void initConfiguration(SPConfig config) {
+	strcpy(config->spImagesDirectory, "");
+	strcpy(config->spImagesPrefix, "");
+	strcpy(config->spImagesSuffix, "");
 	config->spPCADimension = spPCADimensionDefault;
 	config->spNumOfFeatures = spNumOfFeaturesDefault;
 	config->spExtractionMode = spExtractionModeDefault;
