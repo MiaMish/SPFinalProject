@@ -364,7 +364,7 @@ const char* convertMsgToString(SP_CONFIG_MSG* msg) {
  */
 
 void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
-	char value[MAX_SIZE];
+	char value[MAX_SIZE] = {0};
 	int fieldId;
 	int valueAsNum;
 	const char* typeString;
@@ -410,6 +410,7 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 				}
 			}
 		}
+		printf("wrong suffix. got '%s'\n", value);
 		*msg = SP_CONFIG_INVALID_STRING;
 		return;
 

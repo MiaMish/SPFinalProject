@@ -59,9 +59,10 @@ SPKDTreeNode* Init(SPKDArray* kdArr, SplitMethod splitMethod,
 	case INCREMENTAL:
 		splittingDimension = (parentSplittingDimension + 1) % arrayDimension;
 		break;
+
 	case UNDEFINED:
-		//TODO: such case should not exist. needs to announce error
-		break;
+		assert(false);
+		return NULL;
 	}
 
 	SPKDArray* leftArr = NULL;
@@ -111,6 +112,7 @@ void neighborSearch(SPKDTreeNode* root, SPBPQueue bpq, SPPoint point) {
 			return;
 		}
 		spBPQueueEnqueue(bpq, elem);
+		spListElementDestroy(elem);
 		return;
 	}
 

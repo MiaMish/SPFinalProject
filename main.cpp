@@ -64,7 +64,7 @@ int terminate(SPConfig config, SP_CONFIG_MSG msg) {
 	exit(msg);
 }
 
-int mainnn(int argc, char* argv[]) {
+int main(int argc, char* argv[]) {
 	setvbuf (stdout, NULL, _IONBF, BUFSIZ);
 
 	const char* filename = "spcbir.config"; //default name

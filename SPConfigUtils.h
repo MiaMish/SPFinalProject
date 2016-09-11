@@ -17,7 +17,7 @@ typedef enum sp_methods {
 
 /** the options for the image suffix **/
 typedef enum imageTypes {
-	jpg, png, bmp, gif
+	jpg = 0, png = 1, bmp = 2, gif = 3
 } ImageType;
 
 #define MAX_SIZE 1024

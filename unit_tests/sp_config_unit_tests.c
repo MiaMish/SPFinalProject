@@ -54,6 +54,8 @@ bool spConfigBasicTest1() {
 
 	ASSERT_TRUE(spConfigGetSplitMethod(config, &msg) == expMethod);
 
+	spConfigDestroy(config);
+
 	return true;
 }
 

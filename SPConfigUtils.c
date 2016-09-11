@@ -2,7 +2,6 @@
  * SPUtils.c
  */
 
-
 #include "SPConfigUtils.h"
 #include "SPLogger.h"
 #include <assert.h>
@@ -11,7 +10,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <ctype.h>
-
 
 int convertFieldToNum(char* field) {
 	if (strcmp(field, "spImagesDirectory") == 0)
@@ -59,7 +57,7 @@ int convertStringToNum(char str[]) {
 	if (i == 0) {
 		return -1;
 	}
-	if (str[0] ==  '+') {
+	if (str[0] == '+') {
 		// +num is allowed
 		return atoi(&str[1]);
 	}
@@ -79,8 +77,9 @@ const char* convertMethodToString(SplitMethod method) {
 	}
 
 	/*shouldn't get to this line */
-	spLoggerPrintError("SplitMethod was altered, but convertMethodToString wasn't",
-		__FILE__, __func__, __LINE__);
+	spLoggerPrintError(
+			"SplitMethod was altered, but convertMethodToString wasn't",
+			__FILE__, __func__, __LINE__);
 	return NULL;
 }
 
@@ -99,7 +98,7 @@ const char* convertTypeToString(ImageType type) {
 	/*shouldn't reach this line */
 	/*shouldn't get to this line */
 	spLoggerPrintError("ImageType was altered, but convertTypeToString wasn't",
-		__FILE__, __func__, __LINE__);
+	__FILE__, __func__, __LINE__);
 	return NULL;
 }
 
@@ -109,70 +108,21 @@ const char* convertTypeToString(ImageType type) {
  * return convertFieldToNum(field) if line is in correct format
  */
 int extractFieldAndValue(const char* line, char* value) {
-	char field[MAX_SIZE] = {'\0'};
-	int i = 0;
-	int count = 0;
-	int fieldId;
-
-	while (line[i] == ' ') {
-		i++;
-	}
-
-	//comment lines or empty lines are allowed
-	if (line[i] == '#' || line[i] == '\n' || line[i] == EOF) {
+	if (line[0] == '#' || line[0] == '\n' || line[0] == '\r') {
 		return 0;
 	}
-
-	//extracting the first string (field) from line
-	while (line[i] != '\n' && line[i] != '\0' && line[i] != EOF &&
-			line[i] != ' ' && line[i] != '=' && i < MAX_SIZE) {
-		field[count] = line[i];
-		count++;
-		i++;
-	}
-	value[count] = '\0';
-
-	fieldId = convertFieldToNum(field);
-	if (fieldId == -1) {
+	char field[MAX_SIZE];
+	if (!sscanf(line, "%s = %s", field, value)) {
 		return -1;
 	}
+	if (field[0] == '#') {
+		return 0;
 
-	//making sure the next character not ' ' is '='
-	while (line[i] == ' ' && i < MAX_SIZE) {
-		i++;
 	}
-
-	if (line[i] != '=') {
-		return -1;
-	}
-
-	//extracting the second string from line
-	count = 0;
-	i++; //the previous character '=' isn't part of the value
-	while (line[i] == ' ' && i < MAX_SIZE) {
-		i++;
-	}
-
-	while (line[i] != '\n' && line[i] != EOF && line[i] != ' ' && line[i] != '=') {
-		value[count] = line[i];
-		count++;
-		i++;
-	}
-	if(count == 0) {
-		fieldId = -1;
-	}
-	value[count] = '\0';
-
-	while (line[i] != '\n' && line[i] != '\0' && line[i] != EOF && i < MAX_SIZE) {
-		if (line[i] != ' ') {
-			return -1;
-		}
-		i++;
-	}
-
+	int fieldId = convertFieldToNum(field);
 	return fieldId;
-}
 
+}
 
 void printError(const char* filename, int lineNumber, char* msg) {
 	printf("File: %s\nLine: %d\nMessage: %s\n", filename, lineNumber, msg);
