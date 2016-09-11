@@ -33,7 +33,7 @@ extern "C" {
 
 #define RUN_TEST(f) do { \
 			if(f()==true){ \
-				fprintf(stdout, "%s  PASSS\n",#f);\
+				fprintf(stdout, "%s  PASS\n",#f);\
 				fflush(NULL);\
 			}else{ fprintf(stderr, "%s  FAIL\n",#f);\
 			} }while (0)

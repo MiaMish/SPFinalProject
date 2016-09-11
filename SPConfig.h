@@ -12,21 +12,21 @@
  */
 
 typedef enum sp_config_msg_t {
-	SP_CONFIG_MISSING_DIR,
-	SP_CONFIG_MISSING_PREFIX,
-	SP_CONFIG_MISSING_SUFFIX,
-	SP_CONFIG_MISSING_NUM_IMAGES,
-	SP_CONFIG_CANNOT_OPEN_FILE,
-	SP_CONFIG_ALLOC_FAIL,
-	SP_CONFIG_INVALID_INTEGER,
-	SP_CONFIG_INVALID_STRING,
-	SP_CONFIG_INVALID_ARGUMENT,
-	SP_CONFIG_INVALID_BOOLEAN,
-	SP_CONFIG_INVALID_LINE,
-	SP_CONFIG_INDEX_OUT_OF_RANGE,
-	SP_CONFIG_UNKNOWN_ERROR,
-	SP_CONFIG_INVALID_COMMANDLINE,
-	SP_CONFIG_SUCCESS
+	SP_CONFIG_MISSING_DIR = 0,
+	SP_CONFIG_MISSING_PREFIX = 1,
+	SP_CONFIG_MISSING_SUFFIX = 2,
+	SP_CONFIG_MISSING_NUM_IMAGES = 3,
+	SP_CONFIG_CANNOT_OPEN_FILE = 4,
+	SP_CONFIG_ALLOC_FAIL = 5,
+	SP_CONFIG_INVALID_INTEGER = 6,
+	SP_CONFIG_INVALID_STRING = 7,
+	SP_CONFIG_INVALID_ARGUMENT = 8,
+	SP_CONFIG_INVALID_BOOLEAN = 9,
+	SP_CONFIG_INVALID_LINE = 10,
+	SP_CONFIG_INDEX_OUT_OF_RANGE = 11,
+	SP_CONFIG_UNKNOWN_ERROR = 12,
+	SP_CONFIG_INVALID_COMMANDLINE = 13,
+	SP_CONFIG_SUCCESS = 14
 } SP_CONFIG_MSG;
 
 typedef struct sp_config_t* SPConfig;
@@ -244,7 +244,7 @@ char* spConfigGetPCAFilename(const SPConfig config, SP_CONFIG_MSG* msg);
  * @param config - the configuration structure
  * @assert msg != NULL
  * @param msg - pointer in which the msg returned by the function is stored
- * @return type SplitMethod, NULL otherwise.
+ * @return type SplitMethod, UNDEFINED otherwise.
  *
  * - SP_CONFIG_INVALID_ARGUMENT - if config == NULL
  * - SP_CONFIG_SUCCESS - in case of success
@@ -331,5 +331,10 @@ SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config);
  * If config == NULL nothing is done.
  */
 void spConfigDestroy(SPConfig config);
+
+/* @param msg
+ * @returns msg as string
+ */
+const char* convertMsgToString(SP_CONFIG_MSG* msg);
 
 #endif /* SPCONFIG_H_ */

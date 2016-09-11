@@ -26,7 +26,7 @@
 								<option id="gnu.cpp.compiler.mingw.exe.debug.option.debugging.level.544240790" name="Debug Level" superClass="gnu.cpp.compiler.mingw.exe.debug.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.174787896" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;C:\opencv\build\include&quot;"/>
-									<listOptionValue builtIn="false" value="“C:\opencv\opencv_contrib-master\modules\xfeatures2d\include\”"/>
+									<listOptionValue builtIn="false" value="&quot;C:\opencv\opencv_contrib-master\modules\xfeatures2d\include&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.282486193" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>

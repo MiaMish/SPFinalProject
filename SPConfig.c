@@ -105,8 +105,9 @@ bool getterAssert(const SPConfig config, SP_CONFIG_MSG* msg, const char* func);
 SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 	SPConfig config = NULL;
 	FILE* file = NULL;
-	char line[MAX_SIZE];
+	char line[MAX_SIZE] = {'\0'};
 	int lineCounter = 0;
+	int i;
 
 	assert(msg != NULL);
 
@@ -150,17 +151,22 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 			config = NULL;
 			return config;
 		}
+
+		//initialize line to be an array of '\0'
+		for (i = 0; i < MAX_SIZE; i++) {
+			line[i] = '\0';
+		}
 	}
 
 	fclose(file);
 
-	if (strlen(config->spImagesDirectory) == 0) {
+	if (strcmp(config->spImagesDirectory, "") == 0) {
 		*msg = SP_CONFIG_MISSING_DIR;
 		printError(filename, lineCounter, directoryNotSet);
-	} else if (strlen(config->spImagesPrefix) == 0) {
+	} else if (strcmp(config->spImagesPrefix, "") == 0) {
 		*msg = SP_CONFIG_MISSING_PREFIX;
 		printError(filename, lineCounter, preffixNotSet);
-	} else if (strlen(config->spImagesSuffix) == 0) {
+	} else if (strcmp(config->spImagesSuffix, "") == 0) {
 		*msg = SP_CONFIG_MISSING_SUFFIX;
 		printError(filename, lineCounter, suffixNotSet);
 	} else if (config->spNumOfImages == -1) {
@@ -302,7 +308,7 @@ char* spConfigGetPCAFilename(const SPConfig config, SP_CONFIG_MSG* msg) {
 
 SplitMethod spConfigGetSplitMethod(const SPConfig config, SP_CONFIG_MSG* msg) {
 	if (!getterAssert(config, msg, __func__)) {
-		return RANDOM;
+		return UNDEFINED;
 	}
 	return config->spKDTreeSplitMethod;
 }
@@ -315,6 +321,44 @@ void spConfigDestroy(SPConfig config) {
 		free(config);
 		config = NULL;
 	}
+}
+
+const char* convertMsgToString(SP_CONFIG_MSG* msg) {
+	switch (*msg) {
+	case 0:
+		return "SP_CONFIG_MISSING_DIR";
+	case 1:
+		return "SP_CONFIG_MISSING_PREFIX";
+	case 2:
+		return "SP_CONFIG_MISSING_SUFFIX";
+	case 3:
+		return "SP_CONFIG_MISSING_NUM_IMAGES";
+	case 4:
+		return "SP_CONFIG_CANNOT_OPEN_FILE";
+	case 5:
+		return "SP_CONFIG_ALLOC_FAIL";
+	case 6:
+		return "SP_CONFIG_INVALID_INTEGER";
+	case 7:
+		return "SP_CONFIG_INVALID_STRING";
+	case 8:
+		return "SP_CONFIG_INVALID_ARGUMENT";
+	case 9:
+		return "SP_CONFIG_INVALID_BOOLEAN";
+	case 10:
+		return "SP_CONFIG_INVALID_LINE";
+	case 11:
+		return "SP_CONFIG_INDEX_OUT_OF_RANGE";
+	case 12:
+		return "SP_CONFIG_UNKNOWN_ERROR";
+	case 13:
+		return "SP_CONFIG_INVALID_COMMANDLINE";
+	case 14:
+		return "SP_CONFIG_SUCCESS";
+	}
+
+	//should not reach this line
+	return NULL;
 }
 
 /*
@@ -361,7 +405,7 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 	case 3:
 		if (value[0] == '.') {
 			for (ImageType imageType = jpg; imageType <= gif; imageType++) {
-				const char* typeString = convertTypeToString(imageType);
+				typeString = convertTypeToString(imageType);
 				if (strcmp(value, typeString) == 0) {
 					strcpy(config->spImagesSuffix, typeString);
 					return;
@@ -453,6 +497,9 @@ void parseConfigLine(char* line, SPConfig config, SP_CONFIG_MSG* msg) {
 }
 
 void initConfiguration(SPConfig config) {
+	strcpy(config->spImagesDirectory, "");
+	strcpy(config->spImagesPrefix, "");
+	strcpy(config->spImagesSuffix, "");
 	config->spPCADimension = spPCADimensionDefault;
 	config->spNumOfFeatures = spNumOfFeaturesDefault;
 	config->spExtractionMode = spExtractionModeDefault;

@@ -20,6 +20,6 @@ spPCAFilename = nemasis
 spNumOfFeatures = 5
 spExtractionMode= exterminate
 spNumOfSimilarImages=0
-  spKDTreeSplitMethod mewMew
+  spKDTreeSplitMethod =mewMew
 spLoggerLevel=100
 spLoggerFilename=PhiliDelphia

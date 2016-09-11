@@ -18,7 +18,7 @@ extern "C" {
 }
 
 /*
- * creats logger according to information from config
+ * Creates logger according to information from config
  *
  * @para config
  *
@@ -73,12 +73,12 @@ int main(int argc, char* argv[]) {
 	int numOfImages;
 	int i;
 
-	/* should be at most 2 arguments: program name and config name */
+	// should be at most 2 arguments: program name and config name
 	if (argc > 3) {
 		return terminate(NULL, SP_CONFIG_INVALID_COMMANDLINE);
 	}
 
-	/* the user entered config name, so default name shouldn't be used*/
+	// the user entered config name, so default name shouldn't be used
 	if (argc == 3) {
 		if (strcmp("-c", argv[1]) != 0) {
 			return terminate(NULL, SP_CONFIG_INVALID_COMMANDLINE);
@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
 		filename = argv[2];
 	}
 
-	/** creating SPConfig **/
+	// creating SPConfig
 
 	config = spConfigCreate(filename, &msg);
 
@@ -101,14 +101,14 @@ int main(int argc, char* argv[]) {
 		return terminate(config, msg);
 	}
 
-	/** creating SPLogger **/
+	// creating SPLogger
 
 	logMsg = createLogger(config);
 	if (logMsg != SP_LOGGER_SUCCESS) {
 		return terminate(config, SP_CONFIG_UNKNOWN_ERROR);
 	}
 
-	/** extracting features from images or from feats file **/
+	// extracting features from images or from feats file
 
 	numOfImages = spConfigGetNumOfImages(config, &msg);
 	ImageProc imageProc(config);
@@ -250,3 +250,4 @@ int main(int argc, char* argv[]) {
 
 	return terminate(config, SP_CONFIG_SUCCESS);
 }
+
