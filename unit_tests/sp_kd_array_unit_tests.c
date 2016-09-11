@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "unit_tests.h"
 
 #define POINTS_SIZE 5
 #define POINTS_DIM 3
@@ -154,8 +155,8 @@ bool SplitArray() {
 	assertPointsEquals(points[0], spKDArrayGetPointAt(left, 0));
 	assertPointsEquals(points[2], spKDArrayGetPointAt(left, 1));
 	assertPointsEquals(points[4], spKDArrayGetPointAt(left, 2));
-	assertPointsEquals(points[1], spKDArrayGetPointAt(right, 0));
-	assertPointsEquals(points[3], spKDArrayGetPointAt(right, 1));
+	assertPointsEquals(points[3], spKDArrayGetPointAt(right, 0));
+	assertPointsEquals(points[1], spKDArrayGetPointAt(right, 1));
 
 	spKDArrayDestroy(left);
 	spKDArrayDestroy(right);
@@ -165,10 +166,10 @@ bool SplitArray() {
 	ASSERT_NOT_NULL(right);
 
 	assertPointsEquals(points[0], spKDArrayGetPointAt(left, 0));
-	assertPointsEquals(points[2], spKDArrayGetPointAt(left, 1));
-	assertPointsEquals(points[4], spKDArrayGetPointAt(left, 2));
-	assertPointsEquals(points[1], spKDArrayGetPointAt(right, 0));
-	assertPointsEquals(points[3], spKDArrayGetPointAt(right, 1));
+	assertPointsEquals(points[4], spKDArrayGetPointAt(left, 1));
+	assertPointsEquals(points[2], spKDArrayGetPointAt(left, 2));
+	assertPointsEquals(points[3], spKDArrayGetPointAt(right, 0));
+	assertPointsEquals(points[1], spKDArrayGetPointAt(right, 1));
 
 	spKDArrayDestroy(left);
 	spKDArrayDestroy(right);
@@ -177,8 +178,8 @@ bool SplitArray() {
 	ASSERT_NOT_NULL(left);
 	ASSERT_NOT_NULL(right);
 
-	assertPointsEquals(points[0], spKDArrayGetPointAt(left, 0));
-	assertPointsEquals(points[2], spKDArrayGetPointAt(left, 1));
+	assertPointsEquals(points[2], spKDArrayGetPointAt(left, 0));
+	assertPointsEquals(points[0], spKDArrayGetPointAt(left, 1));
 	assertPointsEquals(points[3], spKDArrayGetPointAt(left, 2));
 	assertPointsEquals(points[1], spKDArrayGetPointAt(right, 0));
 	assertPointsEquals(points[4], spKDArrayGetPointAt(right, 1));
@@ -188,8 +189,7 @@ bool SplitArray() {
 	return true;
 }
 
-/*int main17() {
-	setbuf(stdout, NULL);
+int sp_kd_array_unit_tests() {
 	RUN_TEST(InitAndDestroyArray);
 	RUN_TEST(GetPointsCount);
 	RUN_TEST(GetPointAt);
@@ -199,5 +199,5 @@ bool SplitArray() {
 	RUN_TEST(FindMaxSpreadDimension);
 	RUN_TEST(SplitArray);
 	return 0;
-}*/
+}
 

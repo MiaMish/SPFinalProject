@@ -17,6 +17,10 @@ extern "C" {
 #include "SPKDTree.h"
 }
 
+#ifndef MAX_PATH
+#define MAX_PATH 1024
+#endif
+
 /*
  * Creates logger according to information from config
  *
@@ -60,7 +64,7 @@ int terminate(SPConfig config, SP_CONFIG_MSG msg) {
 	exit(msg);
 }
 
-int main(int argc, char* argv[]) {
+int mainnn(int argc, char* argv[]) {
 	setvbuf (stdout, NULL, _IONBF, BUFSIZ);
 
 	const char* filename = "spcbir.config"; //default name
@@ -186,7 +190,11 @@ int main(int argc, char* argv[]) {
 	while (true) {
 		printf("Please enter an image path:\n");
 
-		if (gets(queryPath) == NULL || strcmp(queryPath, "<>") == 0) {
+		;
+		if (!scanf("%s", queryPath)) {
+			break;
+		}
+		if (strcmp(queryPath, "<>") == 0) {
 			break;
 		}
 

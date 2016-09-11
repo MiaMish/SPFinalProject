@@ -266,8 +266,6 @@ SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config) {
 		return SP_CONFIG_INVALID_ARGUMENT;
 	}
 
-	realloc(pcaPath, strlen(config->spImagesDirectory) + strlen(config->spPCAFilename));
-
 	pathLength = sprintf(pcaPath, "%s%s", config->spImagesDirectory,
 			config->spPCAFilename);
 	if (pathLength < 1) {

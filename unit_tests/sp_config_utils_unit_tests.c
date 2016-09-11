@@ -9,6 +9,7 @@
 #include "../SPConfigUtils.h"
 #include "../SPLogger.h"
 #include "unit_test_util.h"
+#include "unit_tests.h"
 
 /**
  *
@@ -136,13 +137,13 @@ bool extractFieldAndValueTest() {
 }
 
 
-int main_utils_test() {
+int sp_config_utils_unit_tests() {
 	RUN_TEST(stringToIntTest);
 	RUN_TEST(fieldToNumTest);
 	RUN_TEST(methodToStringTest);
 	RUN_TEST(typeToStringTest);
 	RUN_TEST(extractFieldAndValueTest);
 
-	return 1;
+	return 0;
 }
 

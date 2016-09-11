@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "unit_tests.h"
 
 #define POINTS_SIZE 7
 #define POINTS_DIM 4
@@ -187,8 +188,7 @@ bool integrationTest() {
 	return true;
 }
 
-int mainkampf() {
-	setbuf(stdout, NULL);
+int sp_kd_tree_unit_tests() {
 	RUN_TEST(integrationTest);
 	return 0;
 }
