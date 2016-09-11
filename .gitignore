@@ -28,3 +28,5 @@
 *.out
 *.app
 /Debug
+
+/yuval-tests
