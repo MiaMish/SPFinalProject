@@ -190,7 +190,6 @@ int main(int argc, char* argv[]) {
 	while (true) {
 		printf("Please enter an image path:\n");
 
-		;
 		if (!scanf("%s", queryPath)) {
 			break;
 		}
@@ -209,7 +208,6 @@ int main(int argc, char* argv[]) {
 		VERIFY_ALLOC(histogram);
 
 		for (i = 0; i < queryNumOfFeats; i++) {
-
 			SPBPQueue queue = spKDTreeNearestNeighbor(kdTree, queryFeats[i],
 					spConfigGetSpKNN(config, &msg));
 			while (!spBPQueueIsEmpty(queue)) {

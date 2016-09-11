@@ -47,10 +47,6 @@ SP_BPQUEUE_MSG spBPQueueEnqueue(SPBPQueue source, SPListElement element){
 	if (element == NULL || source == NULL || source->list == NULL){
 		return SP_BPQUEUE_INVALID_ARGUMENT;
 	}
-	SPListElement new = spListElementCopy(element);
-	if(new == NULL){
-		return SP_BPQUEUE_OUT_OF_MEMORY;
-	}
 	if (source->capacity <= 0){
 		return SP_BPQUEUE_FULL;
 	}
@@ -58,11 +54,11 @@ SP_BPQUEUE_MSG spBPQueueEnqueue(SPBPQueue source, SPListElement element){
 
 	while(1){
 		if (node == NULL){
-			spListInsertLast(source->list, new);
+			spListInsertLast(source->list, element);
 			break;
 		}
-		if (spListElementCompare(node, new) > 0){
-			spListInsertBeforeCurrent(source->list, new);
+		if (spListElementCompare(node, element) > 0){
+			spListInsertBeforeCurrent(source->list, element);
 			break;
 		}
 		else{
