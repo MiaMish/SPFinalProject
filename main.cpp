@@ -80,6 +80,7 @@ int main(int argc, char* argv[]) {
 	int numOfFeats;
 	int numOfImages;
 	int i;
+	int nonExistentCounter = 0;
 
 	// should be at most 2 arguments: program name and config name
 	if (argc > 3) {
@@ -158,7 +159,10 @@ int main(int argc, char* argv[]) {
 		readImageFeaturesFromFile(&(featuresPerImage[i]),
 				&(featureCountPerImage[i]), config, i);
 		if (msg != SP_CONFIG_SUCCESS) {
-			terminate(config, msg);
+			nonExistentCounter++;
+			if (nonExistentCounter > 1) {
+				terminate(config, msg);
+			}
 		}
 		totalFeatures += featureCountPerImage[i];
 	}

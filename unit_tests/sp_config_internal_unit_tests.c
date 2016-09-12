@@ -70,7 +70,6 @@ bool parseLineGeneralTest() {
 	initConfiguration(config);
 	while(fgets(line, 1024, file)) {
 		parseConfigLine(line, config, msg);
-		printf("reached i = %d\n", i);
 		ASSERT_TRUE(*msg == expectedMsg[i]);
 		i++;
 	}
@@ -232,7 +231,6 @@ bool parseLineStringTest() {
 
 		i++;
 	}
-
 
 	fclose(file);
 	spConfigDestroy(config);

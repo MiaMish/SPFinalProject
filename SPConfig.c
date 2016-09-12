@@ -25,6 +25,7 @@
 #define PCADimLowerBound 10
 
 /**Error massages to be printed in case configuration create failed **/
+#define filenameIsNull "filename is NULL\n"
 #define invalidLine "Invalid configuration line\n"
 #define invalidValue "Invalid value - constraint not met\n"
 #define directoryNotSet "Parameter spImagesDirectory is not set\n"
@@ -35,9 +36,7 @@
 /** Error massages reported to logger **/
 #define configIsNull "config is NULL\n"
 #define msgIsNull "msg is NULL\n"
-#define filenameIsNull "filename is NULL\n"
 #define argIsNull "one of the arguments is NULL\n"
-#define fileNotOpen "file cannot be opened\n"
 #define allocFail "memory allocation failure\n"
 
 /** Debug massages reported to logger **/
@@ -113,6 +112,7 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 
 	if (filename == NULL) {
 		*msg = SP_CONFIG_INVALID_ARGUMENT;
+		printf(filenameIsNull);
 		return config;
 	}
 	file = fopen(filename, "r");
@@ -262,7 +262,7 @@ SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config) {
 	int pathLength;
 
 	if (pcaPath == NULL || config == NULL) {
-		spLoggerPrintError("The function was called with an invalid argument", __FILE__, __func__, __LINE__);
+		spLoggerPrintWarning("The function was called with an invalid argument", __FILE__, __func__, __LINE__);
 		return SP_CONFIG_INVALID_ARGUMENT;
 	}
 
@@ -543,12 +543,15 @@ SP_CONFIG_MSG createFilePath(char* imagePath, const SPConfig config, int index,
 }
 
 bool getterAssert(const SPConfig config, SP_CONFIG_MSG* msg, const char* func) {
+	char warningMsg[256];
+
 	assert(msg);
 	if (config == NULL) {
 		*msg = SP_CONFIG_INVALID_ARGUMENT;
-		char errMsg[256];
-		sprintf(errMsg, "The function %s was called with an invalid argument", func);
-		spLoggerPrintError(errMsg, __FILE__, __func__, __LINE__);
+
+		sprintf(warningMsg, "The function %s was called with an invalid argument"
+				, func);
+		spLoggerPrintWarning(warningMsg, __FILE__, __func__, __LINE__);
 		return false;
 	}
 
