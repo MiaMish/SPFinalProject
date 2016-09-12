@@ -14,7 +14,14 @@
 
 #define NULL_CHECK(val,kdArr) if (val == NULL) { spKDArrayDestroy(kdArr); return NULL; }
 
+/*
+ * A helper function to initialize the sorted array of indices for the given coordinate
+ */
 void fillIndices(SPKDArray* kdArr, int coor);
+
+/*
+ * A helper function to sort the indices array according to the given coordinate
+ */
 void sortIndices(SPKDArray* kdArr, int coor);
 
 struct SPKDArray {
@@ -24,6 +31,9 @@ struct SPKDArray {
 	int** sortedIndices;
 };
 
+/*
+ * A helper function to initialize a kd-array
+ */
 SPKDArray* InitBasic(SPPoint* arr, int size, int dim) {
 	SPKDArray* kdArr = (SPKDArray*) malloc(sizeof(SPKDArray));
 	NULL_CHECK(kdArr, kdArr);
@@ -96,6 +106,9 @@ static SPKDArray* currentKdArr = NULL;
 
 static int currentAxis = -1;
 
+/*
+ * A helper function to compare two points in a kd-array
+ */
 int pointsComparator(const void* ptr1, const void* ptr2) {
 	int index1 = *(const int*) ptr1;
 	int index2 = *(const int*) ptr2;
@@ -119,6 +132,9 @@ void sortIndices(SPKDArray* kdArr, int axis) {
 			pointsComparator);
 }
 
+/*
+ * macro to clean up allocations on allocation failure
+ */
 #define SPLIT_CLEANUP(leftMap, rightMap, leftPoints, rightPoints, leftTree, rightTree)   \
 	free(leftMap);   \
 	free(rightMap);   \

@@ -12,6 +12,9 @@
 #include <math.h>
 #include <assert.h>
 
+/*
+ * macro to check allocation failures
+ */
 #define NULL_CHECK(val, tree) if (val == NULL) { spKDTreeDestroy(tree); return NULL; }
 
 struct SPKDTreeNode {
@@ -22,11 +25,17 @@ struct SPKDTreeNode {
 	SPPoint leaf;
 };
 
+/*
+ * Helper function to get a random dimension
+ */
 int randomDimension(int max) {
 	double scaled = (double) rand() / RAND_MAX;
 	return max * scaled;
 }
 
+/*
+ * Helper function to initialize a kd-tree
+ */
 SPKDTreeNode* Init(SPKDArray* kdArr, SplitMethod splitMethod,
 		int parentSplittingDimension) {
 	SPKDTreeNode* root = (SPKDTreeNode*) malloc(sizeof(SPKDTreeNode));
@@ -99,6 +108,9 @@ void spKDTreeDestroy(SPKDTreeNode* root) {
 	free(root);
 }
 
+/*
+ * Helper function to perform neighbor search
+ */
 void neighborSearch(SPKDTreeNode* root, SPBPQueue bpq, SPPoint point) {
 	if (root == NULL) {
 		return;

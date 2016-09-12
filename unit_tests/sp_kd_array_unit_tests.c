@@ -8,6 +8,9 @@
 #define POINTS_SIZE 5
 #define POINTS_DIM 3
 
+/*
+ * Helper function to create an array of points
+ */
 SPPoint* fillPoints() {
 	SPPoint* points = (SPPoint*) malloc(sizeof(SPPoint) * POINTS_SIZE);
 
@@ -29,6 +32,9 @@ SPPoint* fillPoints() {
 	return points;
 }
 
+/*
+ * Helper function to destroy an array of points
+ */
 void killPoints(SPPoint* points) {
 	for (int i = 0; i < POINTS_SIZE; i++) {
 		spPointDestroy(points[i]);
@@ -36,13 +42,18 @@ void killPoints(SPPoint* points) {
 	free(points);
 }
 
+/*
+ * Helper macro to check points equality
+ */
 #define assertPointsEquals(a,b)   \
 	for (int ii = 0; ii < POINTS_DIM; ii++) {   \
 		ASSERT_EQUALS(spPointGetAxisCoor(a, ii), spPointGetAxisCoor(b, ii));   \
 	}
 
 
-//Checks if init and destroy works
+/*
+ * Check init and destroy of kd-array
+ */
 bool InitAndDestroyArray() {
 	SPPoint* points = fillPoints();
 	SPKDArray* kdArr = spKDArrayInit(points, POINTS_SIZE, POINTS_DIM);
@@ -54,6 +65,9 @@ bool InitAndDestroyArray() {
 	return true;
 }
 
+/*
+ * Check points count getter
+ */
 bool GetPointsCount() {
 	SPPoint* points = fillPoints();
 	SPKDArray* kdArr = spKDArrayInit(points, POINTS_SIZE, POINTS_DIM);
@@ -65,6 +79,9 @@ bool GetPointsCount() {
 	return true;
 }
 
+/*
+ * Check point at index getter
+ */
 bool GetPointAt() {
 	SPPoint* points = fillPoints();
 	SPKDArray* kdArr = spKDArrayInit(points, POINTS_SIZE, POINTS_DIM);
@@ -79,6 +96,9 @@ bool GetPointAt() {
 	return true;
 }
 
+/*
+ * Check point by dimension and position in dimension value getter
+ */
 bool GetPointVal() {
 	SPPoint* points = fillPoints();
 	SPKDArray* kdArr = spKDArrayInit(points, POINTS_SIZE, POINTS_DIM);
@@ -106,6 +126,9 @@ bool GetPointVal() {
 	return true;
 }
 
+/*
+ * Check kd-array dimension getter
+ */
 bool GetArrayDimension() {
 	SPPoint* points = fillPoints();
 	SPKDArray* kdArr = spKDArrayInit(points, POINTS_SIZE, POINTS_DIM);
@@ -117,6 +140,9 @@ bool GetArrayDimension() {
 	return true;
 }
 
+/*
+ * Check median getter per dimension
+ */
 bool GetAxisMedian() {
 	SPPoint* points = fillPoints();
 	SPKDArray* kdArr = spKDArrayInit(points, POINTS_SIZE, POINTS_DIM);
@@ -130,6 +156,9 @@ bool GetAxisMedian() {
 	return true;
 }
 
+/*
+ * Check max spread getter per dimension
+ */
 bool FindMaxSpreadDimension() {
 	SPPoint* points = fillPoints();
 	SPKDArray* kdArr = spKDArrayInit(points, POINTS_SIZE, POINTS_DIM);
@@ -141,6 +170,9 @@ bool FindMaxSpreadDimension() {
 	return true;
 }
 
+/*
+ * Check array splitting
+ */
 bool SplitArray() {
 	SPPoint* points = fillPoints();
 	SPKDArray* kdArr = spKDArrayInit(points, POINTS_SIZE, POINTS_DIM);
@@ -189,6 +221,9 @@ bool SplitArray() {
 	return true;
 }
 
+/*
+ * main tests runner
+ */
 int sp_kd_array_unit_tests() {
 	RUN_TEST(InitAndDestroyArray);
 	RUN_TEST(GetPointsCount);
