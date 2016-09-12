@@ -61,67 +61,193 @@ bool spConfigBasicTest1() {
 
 /*
  * basic tester for various getters called before config was created
+ * @return true if after each call for some getter, *msg == SP_CONFIG_INVALID_ARGUMENT
+ * and each function returns value signifying the argument was invalid
+ * @return false otherwise
  */
 bool spConfigUninitialized() {
-	SPConfig config;
-	SP_CONFIG_MSG* msg = (SP_CONFIG_MSG) malloc(sizeof(SP_CONFIG_MSG));
+	SPConfig config = NULL;
+	SP_CONFIG_MSG* msg = (SP_CONFIG_MSG*) malloc(sizeof(SP_CONFIG_MSG));
 
 	ASSERT_FALSE(spConfigIsExtractionMode(config, msg));
-	ASSER_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
+	ASSERT_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
 
 	*msg = SP_CONFIG_SUCCESS;
 	ASSERT_FALSE(spConfigMinimalGui(config, msg));
-	ASSER_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
+	ASSERT_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
 
 	*msg = SP_CONFIG_SUCCESS;
 	ASSERT_FALSE(spConfigGetNumOfImages(config, msg) >= 0);
-	ASSER_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
+	ASSERT_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
 
 	*msg = SP_CONFIG_SUCCESS;
 	ASSERT_FALSE(spConfigGetNumOfFeatures(config, msg) >= 0);
-	ASSER_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
+	ASSERT_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
 
 	*msg = SP_CONFIG_SUCCESS;
 	ASSERT_FALSE(spConfigGetPCADim(config, msg) >= 0);
-	ASSER_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
+	ASSERT_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
 
 	*msg = SP_CONFIG_SUCCESS;
 	ASSERT_FALSE(spConfigGetNumOfSimIms(config, msg) >= 0);
-	ASSER_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
+	ASSERT_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
 
 	*msg = SP_CONFIG_SUCCESS;
 	ASSERT_NULL(spConfigGetLogName(config, msg));
-	ASSER_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
+	ASSERT_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
 
 	*msg = SP_CONFIG_SUCCESS;
 	ASSERT_TRUE(spConfigGetLogLevel(config, msg) == -1);
-	ASSER_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
+	ASSERT_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
 
 	*msg = SP_CONFIG_SUCCESS;
 	ASSERT_TRUE(spConfigGetSpKNN(config, msg) == -1);
-	ASSER_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
+	ASSERT_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
 
 	*msg = SP_CONFIG_SUCCESS;
 	ASSERT_NULL(spConfigGetDirectory(config, msg));
-	ASSER_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
+	ASSERT_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
 
 	*msg = SP_CONFIG_SUCCESS;
 	ASSERT_NULL(spConfigGetPrefix(config, msg));
-	ASSER_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
+	ASSERT_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
 
 	*msg = SP_CONFIG_SUCCESS;
 	ASSERT_NULL(spConfigGetSuffix(config, msg));
-	ASSER_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
+	ASSERT_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
 
 	*msg = SP_CONFIG_SUCCESS;
 	ASSERT_NULL(spConfigGetPCAFilename(config, msg));
-	ASSER_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
+	ASSERT_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
 
+	free(msg);
+	return true;
+}
+
+/*
+ * if config != NULL and imagePath == NULL and index in range , then
+ * spConfigGetImagePath == spConfigGetImageFeatsPath == spConfigGetPCAPath ==
+ * SP_CONFIG_INVALID_ARGUMENT
+ * @return true if condition is met
+ * @return false otherwise
+ */
+bool getPathNullImagepathTest() {
+	SPConfig config;
+	SP_CONFIG_MSG msg;
+	char* imagePath = NULL;
+	const char* configFilename = "./files_for_unit_tests/configExample1.txt";
+	config = spConfigCreate(configFilename, &msg);
+	ASSERT_NOT_NULL(config);
+
+	ASSERT_TRUE(spConfigGetImagePath(imagePath, config, 1) ==
+			SP_CONFIG_INVALID_ARGUMENT);
+	ASSERT_TRUE(spConfigGetImageFeatsPath(imagePath, config, 1) ==
+			SP_CONFIG_INVALID_ARGUMENT);
+	ASSERT_TRUE(spConfigGetPCAPath(imagePath, config) ==
+			SP_CONFIG_INVALID_ARGUMENT);
+
+	spConfigDestroy(config);
+	return true;
+}
+
+/*
+ * if config == NULL and imagePath != NULL and index in range , then
+ * spConfigGetImagePath == spConfigGetImageFeatsPath == spConfigGetPCAPath ==
+ * SP_CONFIG_INVALID_ARGUMENT
+ * @return true if condition is met
+ * @return false otherwise
+ */
+bool getPathNullConfigTest() {
+	SPConfig config = NULL;
+	char* imagePath = (char*) malloc(sizeof(*imagePath));
+
+	ASSERT_TRUE(spConfigGetImagePath(imagePath, config, 1) ==
+			SP_CONFIG_INVALID_ARGUMENT);
+	ASSERT_TRUE(spConfigGetImageFeatsPath(imagePath, config, 1) ==
+			SP_CONFIG_INVALID_ARGUMENT);
+	ASSERT_TRUE(spConfigGetPCAPath(imagePath, config) ==
+			SP_CONFIG_INVALID_ARGUMENT);
+
+	free(imagePath);
+	return true;
+}
+
+/*
+ * if config != NULL and imagePath != NULL and
+ * index not in range of [1, config->numOfImages], then
+ * @return true
+ * @return false otherwise
+ */
+bool getPathWithOutboundsIndexTest() {
+	SPConfig config;
+	SP_CONFIG_MSG msg;
+	const char* configFilename = "./files_for_unit_tests/configExample1.txt";
+	config = spConfigCreate(configFilename, &msg);
+	ASSERT_NOT_NULL(config);
+	char* imagePath = (char*) malloc(sizeof(*imagePath));
+	int numOfImages = spConfigGetNumOfImages(config, &msg);
+
+	ASSERT_TRUE(spConfigGetImagePath(imagePath, config, 0) ==
+			SP_CONFIG_INDEX_OUT_OF_RANGE);
+	ASSERT_TRUE(spConfigGetImagePath(imagePath, config, -3) ==
+			SP_CONFIG_INDEX_OUT_OF_RANGE);
+	ASSERT_TRUE(spConfigGetImagePath(imagePath, config, numOfImages) ==
+			SP_CONFIG_INDEX_OUT_OF_RANGE);
+	ASSERT_TRUE(spConfigGetImagePath(imagePath, config, numOfImages + 1) ==
+			SP_CONFIG_INDEX_OUT_OF_RANGE);
+
+	ASSERT_TRUE(spConfigGetImageFeatsPath(imagePath, config, 0) ==
+			SP_CONFIG_INDEX_OUT_OF_RANGE);
+	ASSERT_TRUE(spConfigGetImageFeatsPath(imagePath, config, -3) ==
+			SP_CONFIG_INDEX_OUT_OF_RANGE);
+	ASSERT_TRUE(spConfigGetImageFeatsPath(imagePath, config, numOfImages) ==
+			SP_CONFIG_INDEX_OUT_OF_RANGE);
+	ASSERT_TRUE(spConfigGetImageFeatsPath(imagePath, config, numOfImages + 1) ==
+			SP_CONFIG_INDEX_OUT_OF_RANGE);
+
+	free(imagePath);
+	spConfigDestroy(config);
+	return true;
+}
+
+/*
+ * if config != NULL and imagePath != NULL and
+ * index in range of [1, config->numOfImages], and
+ * if expected paths equal to the values returned from the functions the
+ * @return true
+ * @return false otherwise
+ */
+bool getPathWithValidArgumentsTest() {
+	SPConfig config;
+	SP_CONFIG_MSG msg;
+	const char* configFilename = "./files_for_unit_tests/configExample1.txt";
+	config = spConfigCreate(configFilename, &msg);
+	ASSERT_NOT_NULL(config);
+	char* imagePath = (char*) malloc(sizeof(char) * MAX_SIZE * 4);
+	const char* expImagePath = "./images/img1.png";
+	const char* expFeatsPath = "./images/img1.feats";
+	const char* expPCAPath = "./images/pca.yml";
+
+
+	ASSERT_TRUE(strcmp(spConfigGetImagePath(imagePath, config, 1),
+			expImagePath) == 0);
+	ASSERT_TRUE(strcmp(spConfigGetImageFeatsPath(imagePath, config, 1),
+			expFeatsPath) == 0);
+	ASSERT_TRUE(strcmp(spConfigGetPCAPath(imagePath, config),
+			expPCAPath) == 0);
+
+	free(imagePath);
+	spConfigDestroy(config);
 	return true;
 }
 
 int sp_config_unit_tests() {
 	RUN_TEST(spConfigBasicTest1);
+	RUN_TEST(spConfigUninitialized);
+	RUN_TEST(getPathNullImagepathTest);
+	RUN_TEST(getPathNullConfigTest);
+	RUN_TEST(getPathWithOutboundsIndexTest);
+	RUN_TEST(getPathWithValidArgumentsTest);
 
 	return 0;
 }

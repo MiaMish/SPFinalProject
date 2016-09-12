@@ -525,7 +525,7 @@ SP_CONFIG_MSG createFilePath(char* imagePath, const SPConfig config, int index,
 		return SP_CONFIG_INVALID_ARGUMENT;
 	}
 
-	if (index >= config->spNumOfImages || index < 0) {
+	if (index >= config->spNumOfImages || index <= 0) {
 		sprintf(errMsg, "The index given to %s is out of range", func);
 		spLoggerPrintError(errMsg, __FILE__, __func__, __LINE__);
 		return SP_CONFIG_INDEX_OUT_OF_RANGE;
