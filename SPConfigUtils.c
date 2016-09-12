@@ -108,20 +108,68 @@ const char* convertTypeToString(ImageType type) {
  * return convertFieldToNum(field) if line is in correct format
  */
 int extractFieldAndValue(const char* line, char* value) {
-	if (line[0] == '#' || line[0] == '\n' || line[0] == '\r') {
-		return 0;
-	}
-	char field[MAX_SIZE];
-	if (!sscanf(line, "%s = %s", field, value)) {
-		return -1;
-	}
-	if (field[0] == '#') {
-		return 0;
+	 char field[MAX_SIZE] = {'\0'};
+	 int i = 0;
+	 int count = 0;
+	 int fieldId;
 
-	}
-	int fieldId = convertFieldToNum(field);
-	return fieldId;
+	 while (line[i] == ' ') {
+	      i++;
+	 }
 
+	 //comment lines or empty lines are allowed
+	 if (line[0] == '#' || line[0] == '\n' || line[0] == '\r\n' || line[0] == '\0') {
+	      return 0;
+	 }
+
+	 //extracting the first string (field) from line
+	 while (line[i] != '\n' && line[i] != '\0' && line[i] != ' ' && line[0] != '\r\n'
+			 && line[i] != '=' && i < MAX_SIZE) {
+		 field[count] = line[i];
+	     count++;
+	     i++;
+	 }
+	 value[count] = '\0';
+
+	 fieldId = convertFieldToNum(field);
+	 if (fieldId == -1) {
+	     return -1;
+	 }
+
+	 //making sure the next character not ' ' is '='
+	 while (line[i] == ' ' && i < MAX_SIZE) {
+		 i++;
+	 }
+
+	 if (line[i] != '=') {
+	     return -1;
+	 }
+
+	 //extracting the second string from line
+	 count = 0;
+	 i++; //the previous character '=' isn't part of the value
+	 while (line[i] == ' ' && i < MAX_SIZE) {
+	     i++;
+	 }
+
+	 while (line[i] != '\n' && line[i] != '\r\n' && line[i] != ' ' && line[i] != '=') {
+		 value[count] = line[i];
+	     count++;
+	     i++;
+	 }
+	 if(count == 0) {
+	     fieldId = -1;
+	 }
+	 value[count] = '\0';
+
+	 while (line[i] != '\n' && line[0] != '\r\n' && line[i] != '\0' && i < MAX_SIZE) {
+	     if (line[i] != ' ') {
+	    	 return -1;
+	     }
+	     i++;
+	 }
+
+	 return fieldId;
 }
 
 void printError(const char* filename, int lineNumber, char* msg) {

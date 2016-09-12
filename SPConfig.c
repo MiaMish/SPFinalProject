@@ -543,7 +543,8 @@ SP_CONFIG_MSG createFilePath(char* imagePath, const SPConfig config, int index,
 }
 
 bool getterAssert(const SPConfig config, SP_CONFIG_MSG* msg, const char* func) {
-	if (msg == NULL || config == NULL) {
+	assert(msg);
+	if (config == NULL) {
 		*msg = SP_CONFIG_INVALID_ARGUMENT;
 		char errMsg[256];
 		sprintf(errMsg, "The function %s was called with an invalid argument", func);

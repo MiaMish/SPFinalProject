@@ -59,6 +59,67 @@ bool spConfigBasicTest1() {
 	return true;
 }
 
+/*
+ * basic tester for various getters called before config was created
+ */
+bool spConfigUninitialized() {
+	SPConfig config;
+	SP_CONFIG_MSG* msg = (SP_CONFIG_MSG) malloc(sizeof(SP_CONFIG_MSG));
+
+	ASSERT_FALSE(spConfigIsExtractionMode(config, msg));
+	ASSER_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
+
+	*msg = SP_CONFIG_SUCCESS;
+	ASSERT_FALSE(spConfigMinimalGui(config, msg));
+	ASSER_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
+
+	*msg = SP_CONFIG_SUCCESS;
+	ASSERT_FALSE(spConfigGetNumOfImages(config, msg) >= 0);
+	ASSER_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
+
+	*msg = SP_CONFIG_SUCCESS;
+	ASSERT_FALSE(spConfigGetNumOfFeatures(config, msg) >= 0);
+	ASSER_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
+
+	*msg = SP_CONFIG_SUCCESS;
+	ASSERT_FALSE(spConfigGetPCADim(config, msg) >= 0);
+	ASSER_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
+
+	*msg = SP_CONFIG_SUCCESS;
+	ASSERT_FALSE(spConfigGetNumOfSimIms(config, msg) >= 0);
+	ASSER_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
+
+	*msg = SP_CONFIG_SUCCESS;
+	ASSERT_NULL(spConfigGetLogName(config, msg));
+	ASSER_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
+
+	*msg = SP_CONFIG_SUCCESS;
+	ASSERT_TRUE(spConfigGetLogLevel(config, msg) == -1);
+	ASSER_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
+
+	*msg = SP_CONFIG_SUCCESS;
+	ASSERT_TRUE(spConfigGetSpKNN(config, msg) == -1);
+	ASSER_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
+
+	*msg = SP_CONFIG_SUCCESS;
+	ASSERT_NULL(spConfigGetDirectory(config, msg));
+	ASSER_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
+
+	*msg = SP_CONFIG_SUCCESS;
+	ASSERT_NULL(spConfigGetPrefix(config, msg));
+	ASSER_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
+
+	*msg = SP_CONFIG_SUCCESS;
+	ASSERT_NULL(spConfigGetSuffix(config, msg));
+	ASSER_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
+
+	*msg = SP_CONFIG_SUCCESS;
+	ASSERT_NULL(spConfigGetPCAFilename(config, msg));
+	ASSER_TRUE(*msg == SP_CONFIG_INVALID_ARGUMENT);
+
+	return true;
+}
+
 int sp_config_unit_tests() {
 	RUN_TEST(spConfigBasicTest1);
 
