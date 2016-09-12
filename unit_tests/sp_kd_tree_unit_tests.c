@@ -9,11 +9,17 @@
 #define POINTS_SIZE 7
 #define POINTS_DIM 4
 
+/*
+ * Helper macro to test points equality
+ */
 #define assertPointsEquals(a,b)   \
 	for (int ii = 0; ii < POINTS_DIM; ii++) {   \
 		ASSERT_EQUALS(spPointGetAxisCoor(a, ii), spPointGetAxisCoor(b, ii));   \
 	}
 
+/*
+ * Helper methods to get a points array
+ */
 SPPoint* fillTreePoints() {
 	SPPoint* points = (SPPoint*) malloc(sizeof(SPPoint) * POINTS_SIZE);
 
@@ -41,6 +47,9 @@ SPPoint* fillTreePoints() {
 	return points;
 }
 
+/*
+ * Helper method to destroy a points array
+ */
 void killTreePoints(SPPoint* points) {
 	for (int i = 0; i < POINTS_SIZE; i++) {
 		spPointDestroy(points[i]);
@@ -48,8 +57,10 @@ void killTreePoints(SPPoint* points) {
 	free(points);
 }
 
-bool integrationTest() {
-
+/*
+ * Test split of kd-array as used by kd-tree
+ */
+bool KDArrayForKDTreeTest() {
 	SPPoint* points = fillTreePoints();
 	SPPoint A = points[0];
 	SPPoint B = points[1];
@@ -97,7 +108,25 @@ bool integrationTest() {
 	ASSERT_EQUALS(spPointGetAxisCoor(E, 3), spKDArrayGetPointVal(kdArr, 3, 5));
 	ASSERT_EQUALS(spPointGetAxisCoor(G, 3), spKDArrayGetPointVal(kdArr, 3, 6));
 
-	// incremental
+	return true;
+}
+
+/*
+ * Test search in tree, when split incrementally
+ */
+bool KDTreeSplitIncremental() {
+
+	SPPoint* points = fillTreePoints();
+	SPPoint A = points[0];
+	SPPoint B = points[1];
+	SPPoint C = points[2];
+	SPPoint D = points[3];
+	SPPoint E = points[4];
+	SPPoint F = points[5];
+	SPPoint G = points[6];
+
+	SPKDArray* kdArr = spKDArrayInit(points, POINTS_SIZE, POINTS_DIM);
+
 	SPKDTreeNode* root = spKDTreeInit(kdArr, INCREMENTAL);
 	ASSERT_NOT_NULL(root);
 
@@ -126,61 +155,7 @@ bool integrationTest() {
 
 	spBPQueueDestroy(queue);
 	spKDTreeDestroy(root);
-
-	// max spread
-	root = spKDTreeInit(kdArr, MAX_SPREAD);
-	ASSERT_NOT_NULL(root);
-
-	queue = spKDTreeNearestNeighbor(root, H, 4);
-	ASSERT_NOT_NULL(queue);
-
-	ASSERT_TRUE(spBPQueueIsFull(queue));
-	element = spBPQueuePeekLast(queue);
-	ASSERT_EQUALS(spPointGetIndex(D), spListElementGetIndex(element));
-	spListElementDestroy(element);
-	spBPQueueDequeue(queue);
-	element = spBPQueuePeekLast(queue);
-	ASSERT_EQUALS(spPointGetIndex(E), spListElementGetIndex(element));
-	spListElementDestroy(element);
-	spBPQueueDequeue(queue);
-	element = spBPQueuePeekLast(queue);
-	ASSERT_EQUALS(spPointGetIndex(A), spListElementGetIndex(element));
-	spListElementDestroy(element);
-	spBPQueueDequeue(queue);
-	element = spBPQueuePeekLast(queue);
-	ASSERT_EQUALS(spPointGetIndex(B), spListElementGetIndex(element));
-	spListElementDestroy(element);
-
-	spBPQueueDestroy(queue);
-	spKDTreeDestroy(root);
-
-	// random
-	root = spKDTreeInit(kdArr, RANDOM);
-	ASSERT_NOT_NULL(root);
-
-	queue = spKDTreeNearestNeighbor(root, H, 4);
-	ASSERT_NOT_NULL(queue);
-
-	ASSERT_TRUE(spBPQueueIsFull(queue));
-	element = spBPQueuePeekLast(queue);
-	ASSERT_EQUALS(spPointGetIndex(D), spListElementGetIndex(element));
-	spListElementDestroy(element);
-	spBPQueueDequeue(queue);
-	element = spBPQueuePeekLast(queue);
-	ASSERT_EQUALS(spPointGetIndex(E), spListElementGetIndex(element));
-	spListElementDestroy(element);
-	spBPQueueDequeue(queue);
-	element = spBPQueuePeekLast(queue);
-	ASSERT_EQUALS(spPointGetIndex(A), spListElementGetIndex(element));
-	spListElementDestroy(element);
-	spBPQueueDequeue(queue);
-	element = spBPQueuePeekLast(queue);
-	ASSERT_EQUALS(spPointGetIndex(B), spListElementGetIndex(element));
-	spListElementDestroy(element);
-
-	spBPQueueDestroy(queue);
 	spPointDestroy(H);
-	spKDTreeDestroy(root);
 
 	spKDArrayDestroy(kdArr);
 	killTreePoints(points);
@@ -188,8 +163,119 @@ bool integrationTest() {
 	return true;
 }
 
+/*
+ * Test search in tree, when split by max spread dimension
+ */
+bool KDTreeSplitMaxSpread() {
+
+	SPPoint* points = fillTreePoints();
+	SPPoint A = points[0];
+	SPPoint B = points[1];
+	SPPoint C = points[2];
+	SPPoint D = points[3];
+	SPPoint E = points[4];
+	SPPoint F = points[5];
+	SPPoint G = points[6];
+
+	SPKDArray* kdArr = spKDArrayInit(points, POINTS_SIZE, POINTS_DIM);
+
+	SPKDTreeNode* root = spKDTreeInit(kdArr, MAX_SPREAD);
+	ASSERT_NOT_NULL(root);
+
+	double values[] = { 2, 3, 1, -1 };
+	SPPoint H = spPointCreate(values, POINTS_DIM, 7);
+
+	SPBPQueue queue = spKDTreeNearestNeighbor(root, H, 4);
+	ASSERT_NOT_NULL(queue);
+
+	ASSERT_TRUE(spBPQueueIsFull(queue));
+	SPListElement element = spBPQueuePeekLast(queue);
+	ASSERT_EQUALS(spPointGetIndex(D), spListElementGetIndex(element));
+	spListElementDestroy(element);
+	spBPQueueDequeue(queue);
+	element = spBPQueuePeekLast(queue);
+	ASSERT_EQUALS(spPointGetIndex(E), spListElementGetIndex(element));
+	spListElementDestroy(element);
+	spBPQueueDequeue(queue);
+	element = spBPQueuePeekLast(queue);
+	ASSERT_EQUALS(spPointGetIndex(A), spListElementGetIndex(element));
+	spListElementDestroy(element);
+	spBPQueueDequeue(queue);
+	element = spBPQueuePeekLast(queue);
+	ASSERT_EQUALS(spPointGetIndex(B), spListElementGetIndex(element));
+	spListElementDestroy(element);
+
+	spBPQueueDestroy(queue);
+	spKDTreeDestroy(root);
+	spPointDestroy(H);
+
+	spKDArrayDestroy(kdArr);
+	killTreePoints(points);
+
+	return true;
+}
+
+/*
+ * Test search in tree, when split randomly
+ */
+bool KDTreeSplitRandom() {
+
+	SPPoint* points = fillTreePoints();
+	SPPoint A = points[0];
+	SPPoint B = points[1];
+	SPPoint C = points[2];
+	SPPoint D = points[3];
+	SPPoint E = points[4];
+	SPPoint F = points[5];
+	SPPoint G = points[6];
+
+	SPKDArray* kdArr = spKDArrayInit(points, POINTS_SIZE, POINTS_DIM);
+
+	SPKDTreeNode* root = spKDTreeInit(kdArr, RANDOM);
+	ASSERT_NOT_NULL(root);
+
+	double values[] = { 2, 3, 1, -1 };
+	SPPoint H = spPointCreate(values, POINTS_DIM, 7);
+
+	SPBPQueue queue = spKDTreeNearestNeighbor(root, H, 4);
+	ASSERT_NOT_NULL(queue);
+
+	ASSERT_TRUE(spBPQueueIsFull(queue));
+	SPListElement element = spBPQueuePeekLast(queue);
+	ASSERT_EQUALS(spPointGetIndex(D), spListElementGetIndex(element));
+	spListElementDestroy(element);
+	spBPQueueDequeue(queue);
+	element = spBPQueuePeekLast(queue);
+	ASSERT_EQUALS(spPointGetIndex(E), spListElementGetIndex(element));
+	spListElementDestroy(element);
+	spBPQueueDequeue(queue);
+	element = spBPQueuePeekLast(queue);
+	ASSERT_EQUALS(spPointGetIndex(A), spListElementGetIndex(element));
+	spListElementDestroy(element);
+	spBPQueueDequeue(queue);
+	element = spBPQueuePeekLast(queue);
+	ASSERT_EQUALS(spPointGetIndex(B), spListElementGetIndex(element));
+	spListElementDestroy(element);
+
+	spBPQueueDestroy(queue);
+	spKDTreeDestroy(root);
+	spPointDestroy(H);
+
+	spKDArrayDestroy(kdArr);
+	killTreePoints(points);
+
+	return true;
+}
+
+/*
+ * main caller to tests of this module
+ */
 int sp_kd_tree_unit_tests() {
-	RUN_TEST(integrationTest);
+	RUN_TEST(KDArrayForKDTreeTest);
+	RUN_TEST(KDTreeSplitIncremental);
+	RUN_TEST(KDTreeSplitMaxSpread);
+	RUN_TEST(KDTreeSplitRandom);
+
 	return 0;
 }
 

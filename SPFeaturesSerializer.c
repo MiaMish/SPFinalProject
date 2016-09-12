@@ -6,7 +6,19 @@
 #include <stdlib.h>
 #include <assert.h>
 
-SP_CONFIG_MSG getFeatsFile(SPConfig config, int imageIndex, FILE** file, const char* mode) {
+/*
+ * @param config - the configs provider
+ * @param imageIndex - index of the image
+ * @param file - output parameter that will store the handler to feats file
+ * @param mode - file open mode, as given to the OS
+ *
+ * The helper function is retrieving a handler to a matching feats file, for either reading or writing
+ *
+ * @return SP_CONFIG_SUCCESS on success
+ * @return SP_CONFIG_UNKNOWN_ERROR on open failure
+ */
+SP_CONFIG_MSG getFeatsFile(SPConfig config, int imageIndex, FILE** file,
+		const char* mode) {
 	char featsPath[260];
 
 	SP_CONFIG_MSG msg = spConfigGetImageFeatsPath(featsPath, config,

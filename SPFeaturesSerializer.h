@@ -19,8 +19,10 @@
 	}
 
 /*
- * @param imFeatures - the features extracted from the index-th image in te directory
- * @param numOfFeats - the number of elements in imFeatures
+ * @param imFeatures - the features extracted
+ * @param numOfFeats - the number of features
+ * @param config - the configs provider
+ * @param imageIndex - index of the image to which the feats belong to
  *
  * Creates features file for the index-th image in directory
  *
@@ -30,8 +32,10 @@
 SP_CONFIG_MSG writeImageFeaturesToFile(SPPoint* imFeatures, int numOfFeats, SPConfig config, int imageIndex);
 
 /*
- * @param imFeatures - the features extracted from the index-th image in te directory
- * @param numOfFeats - the number of elements in imFeatures
+ * @param imFeatures - an output parameter for the imported features
+ * @param numOfFeats - an output parameter for the number of imported features
+ * @param config - the configs provider
+ * @param imageIndex - index of the image to which the feats belong to
  *
  * Creates features file for the index-th image in directory
  *

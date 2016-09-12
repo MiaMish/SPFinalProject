@@ -51,7 +51,7 @@ SP_LOGGER_MSG createLogger(SPConfig config) {
 }
 
 /*
- * frees config and print errors
+ * wraps up the program and exists with a given message code
  * @return 1
  */
 int terminate(SPConfig config, SP_CONFIG_MSG msg) {
@@ -60,10 +60,14 @@ int terminate(SPConfig config, SP_CONFIG_MSG msg) {
 	if (config != NULL) {
 		spConfigDestroy(config);
 	}
+
 	spLoggerDestroy();
 	exit(msg);
 }
 
+/*
+ * main entry point, returns status code
+ */
 int main(int argc, char* argv[]) {
 	setvbuf (stdout, NULL, _IONBF, BUFSIZ);
 
@@ -141,6 +145,8 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
+	// importing features from files
+
 	SPPoint** featuresPerImage = (SPPoint**) malloc(sizeof(SPPoint*) * numOfImages);
 	VERIFY_ALLOC(featuresPerImage);
 	int* featureCountPerImage = (int*) malloc(sizeof(int) * numOfImages);
@@ -166,6 +172,8 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
+	// building kd-array
+
 	SPKDArray* kdArray = spKDArrayInit(allFeatures, totalFeatures,
 			spConfigGetPCADim(config, &msg));
 	VERIFY_ALLOC(kdArray);
@@ -180,10 +188,14 @@ int main(int argc, char* argv[]) {
 	free(featuresPerImage);
 	free(featureCountPerImage);
 
+	// building kd-tree
+
 	SPKDTreeNode* kdTree = spKDTreeInit(kdArray,
 			spConfigGetSplitMethod(config, &msg));
 	VERIFY_ALLOC(kdTree);
 	spKDArrayDestroy(kdArray);
+
+	// getting user query until hitting "<>"
 
 	char queryPath[MAX_PATH];
 
@@ -197,12 +209,16 @@ int main(int argc, char* argv[]) {
 			break;
 		}
 
+		// calculate feats of given query
+
 		int queryNumOfFeats;
 		SPPoint* queryFeats = imageProc.getImageFeatures(queryPath, 0,	&queryNumOfFeats);
 		if (queryFeats == NULL) {
 			spLoggerPrintError(unknownErr, __FILE__, __func__, __LINE__);
 			terminate(config, SP_CONFIG_UNKNOWN_ERROR);
 		}
+
+		// compare query feats to all feats in kd-tree and apply to histogram
 
 		int* histogram = (int*) calloc(sizeof(int), numOfImages);
 		VERIFY_ALLOC(histogram);
@@ -219,6 +235,8 @@ int main(int argc, char* argv[]) {
 			}
 			spBPQueueDestroy(queue);
 		}
+
+		// extract and display similar images from histogram
 
 		int simIms = spConfigGetNumOfSimIms(config, &msg);
 		for (i = 0; i < simIms; i++) {
