@@ -100,6 +100,11 @@ const char* convertTypeToString(ImageType type) {
 	return NULL;
 }
 
+#define SKIP_SPACES(ptr)  \
+		while (*ptr == ' ') {  \
+			ptr++;  \
+		}
+
 int extractFieldAndValue(const char* line, char* value) {
 	char field[MAX_SIZE] = { 0 };
 	char dummy[MAX_SIZE] = { 0 };
