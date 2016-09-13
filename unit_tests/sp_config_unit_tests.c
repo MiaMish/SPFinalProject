@@ -187,8 +187,6 @@ bool getPathWithOutboundsIndexTest() {
 	char* imagePath = (char*) malloc(sizeof(*imagePath));
 	int numOfImages = spConfigGetNumOfImages(config, &msg);
 
-	ASSERT_TRUE(spConfigGetImagePath(imagePath, config, 0) ==
-			SP_CONFIG_INDEX_OUT_OF_RANGE);
 	ASSERT_TRUE(spConfigGetImagePath(imagePath, config, -3) ==
 			SP_CONFIG_INDEX_OUT_OF_RANGE);
 	ASSERT_TRUE(spConfigGetImagePath(imagePath, config, numOfImages) ==
@@ -196,8 +194,6 @@ bool getPathWithOutboundsIndexTest() {
 	ASSERT_TRUE(spConfigGetImagePath(imagePath, config, numOfImages + 1) ==
 			SP_CONFIG_INDEX_OUT_OF_RANGE);
 
-	ASSERT_TRUE(spConfigGetImageFeatsPath(imagePath, config, 0) ==
-			SP_CONFIG_INDEX_OUT_OF_RANGE);
 	ASSERT_TRUE(spConfigGetImageFeatsPath(imagePath, config, -3) ==
 			SP_CONFIG_INDEX_OUT_OF_RANGE);
 	ASSERT_TRUE(spConfigGetImageFeatsPath(imagePath, config, numOfImages) ==
@@ -229,12 +225,12 @@ bool getPathWithValidArgumentsTest() {
 	const char* expPCAPath = "./images/pca.yml";
 
 
-	ASSERT_TRUE(strcmp(spConfigGetImagePath(imagePath, config, 1),
-			expImagePath) == 0);
-	ASSERT_TRUE(strcmp(spConfigGetImageFeatsPath(imagePath, config, 1),
-			expFeatsPath) == 0);
-	ASSERT_TRUE(strcmp(spConfigGetPCAPath(imagePath, config),
-			expPCAPath) == 0);
+	ASSERT_TRUE(spConfigGetImagePath(imagePath, config, 1) == SP_CONFIG_SUCCESS);
+	ASSERT_TRUE(strcmp(imagePath, expImagePath) == 0);
+	ASSERT_TRUE(spConfigGetImageFeatsPath(imagePath, config, 1) == SP_CONFIG_SUCCESS);
+	ASSERT_TRUE(strcmp(imagePath, expFeatsPath) == 0);
+	ASSERT_TRUE(spConfigGetPCAPath(imagePath, config) == SP_CONFIG_SUCCESS);
+	ASSERT_TRUE(strcmp(imagePath, expPCAPath) == 0);
 
 	free(imagePath);
 	spConfigDestroy(config);

@@ -119,11 +119,8 @@ bool KDTreeSplitIncremental() {
 	SPPoint* points = fillTreePoints();
 	SPPoint A = points[0];
 	SPPoint B = points[1];
-	SPPoint C = points[2];
 	SPPoint D = points[3];
 	SPPoint E = points[4];
-	SPPoint F = points[5];
-	SPPoint G = points[6];
 
 	SPKDArray* kdArr = spKDArrayInit(points, POINTS_SIZE, POINTS_DIM);
 
@@ -171,11 +168,8 @@ bool KDTreeSplitMaxSpread() {
 	SPPoint* points = fillTreePoints();
 	SPPoint A = points[0];
 	SPPoint B = points[1];
-	SPPoint C = points[2];
 	SPPoint D = points[3];
 	SPPoint E = points[4];
-	SPPoint F = points[5];
-	SPPoint G = points[6];
 
 	SPKDArray* kdArr = spKDArrayInit(points, POINTS_SIZE, POINTS_DIM);
 
@@ -223,11 +217,8 @@ bool KDTreeSplitRandom() {
 	SPPoint* points = fillTreePoints();
 	SPPoint A = points[0];
 	SPPoint B = points[1];
-	SPPoint C = points[2];
 	SPPoint D = points[3];
 	SPPoint E = points[4];
-	SPPoint F = points[5];
-	SPPoint G = points[6];
 
 	SPKDArray* kdArr = spKDArrayInit(points, POINTS_SIZE, POINTS_DIM);
 

@@ -149,6 +149,9 @@ bool extractFieldAndValueTest() {
 		}
 
 		fieldId = extractFieldAndValue(line, value);
+		if (fieldId != fieldIdRes[i]){
+			printf("stopped on i = %d. fieldId = %d\n", i, fieldId);
+		}
 		ASSERT_TRUE(fieldId == fieldIdRes[i]);
 	}
 
