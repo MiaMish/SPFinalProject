@@ -100,69 +100,51 @@ const char* convertTypeToString(ImageType type) {
 	return NULL;
 }
 
+#define SKIP_SPACES(ptr)  \
+		while (*ptr == ' ') {  \
+			ptr++;  \
+		}
+
 int extractFieldAndValue(const char* line, char* value) {
-	 char field[MAX_SIZE] = {'\0'};
-	 int i = 0;
-	 int count = 0;
-	 int fieldId;
+	char field[MAX_SIZE] = { 0 };
+	char dummy[MAX_SIZE] = { 0 };
+	int fieldId;
 
-	 while (line[i] == ' ') {
-	      i++;
-	 }
+	if (*line == '\0' || *line == '\n' || *line == '\r') {
+		return 0;
+	}
 
-	 //comment lines or empty lines are allowed
-	 if (line[0] == '#' || line[0] == '\n' || line[0] == '\r' || line[0] == '\0') {
-	      return 0;
-	 }
+	SKIP_SPACES(line);
 
-	 //extracting the first string (field) from line
-	 while (line[i] != '\n' && line[i] != '\0' && line[i] != ' ' && line[0] != '\r'
-			 && line[i] != '=' && i < MAX_SIZE) {
-		 field[count] = line[i];
-	     count++;
-	     i++;
-	 }
-	 value[count] = '\0';
+	if (*line == '#') {
+		return 0;
+	}
 
-	 fieldId = convertFieldToNum(field);
-	 if (fieldId == -1) {
-	     return -1;
-	 }
+	if (!sscanf(line, "%1024[^= ]", field)) {
+		return -1;
+	}
+	line += strlen(field);
 
-	 //making sure the next character not ' ' is '='
-	 while (line[i] == ' ' && i < MAX_SIZE) {
-		 i++;
-	 }
+	SKIP_SPACES(line);
 
-	 if (line[i] != '=') {
-	     return -1;
-	 }
+	if (*line != '=') {
+		return -1;
+	}
+	line++;
 
-	 //extracting the second string from line
-	 count = 0;
-	 i++; //the previous character '=' isn't part of the value
-	 while (line[i] == ' ' && i < MAX_SIZE) {
-	     i++;
-	 }
+	SKIP_SPACES(line);
 
-	 while (line[i] != '\n' && line[i] != '\r' && line[i] != ' ' && line[i] != '=') {
-		 value[count] = line[i];
-	     count++;
-	     i++;
-	 }
-	 if(count == 0) {
-	     fieldId = -1;
-	 }
-	 value[count] = '\0';
+	if (!sscanf(line, "%s %s", value, dummy)) {
+		return -1;
+	}
 
-	 while (line[i] != '\n' && line[0] != '\r' && line[i] != '\0' && i < MAX_SIZE) {
-	     if (line[i] != ' ') {
-	    	 return -1;
-	     }
-	     i++;
-	 }
+	if (dummy[0] != '\0') {
+		return -1;
+	}
 
-	 return fieldId;
+	fieldId = convertFieldToNum(field);
+
+	return fieldId;
 }
 
 void printErrorInConfig(const char* filename, int lineNumber, char* msg) {
