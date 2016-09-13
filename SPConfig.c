@@ -112,7 +112,7 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 
 	if (filename == NULL) {
 		*msg = SP_CONFIG_INVALID_ARGUMENT;
-		printf(filenameIsNull);
+		printf("Warning in %s: %s", __func__, filenameIsNull);
 		return config;
 	}
 	file = fopen(filename, "r");
@@ -126,6 +126,7 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 		*msg = SP_CONFIG_ALLOC_FAIL;
 		free(config);
 		config = NULL;
+		printf("Warning in %s: %s", __func__, allocFail);
 		return config;
 	}
 
@@ -137,13 +138,13 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 		if (*msg != SP_CONFIG_SUCCESS) {
 			fclose(file);
 			if (*msg == SP_CONFIG_INVALID_LINE) {
-				printError(filename, lineCounter, invalidLine);
+				printErrorInConfig(filename, lineCounter, invalidLine);
 			} else if (*msg == SP_CONFIG_INVALID_INTEGER
 					|| *msg == SP_CONFIG_INVALID_STRING
 					|| *msg == SP_CONFIG_INVALID_BOOLEAN) {
-				printError(filename, lineCounter, invalidValue);
+				printErrorInConfig(filename, lineCounter, invalidValue);
 			} else {
-				printError(filename, lineCounter,
+				printErrorInConfig(filename, lineCounter,
 						"Some error I didn't think about");
 			}
 
@@ -162,16 +163,16 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 
 	if (strcmp(config->spImagesDirectory, "") == 0) {
 		*msg = SP_CONFIG_MISSING_DIR;
-		printError(filename, lineCounter, directoryNotSet);
+		printErrorInConfig(filename, lineCounter, directoryNotSet);
 	} else if (strcmp(config->spImagesPrefix, "") == 0) {
 		*msg = SP_CONFIG_MISSING_PREFIX;
-		printError(filename, lineCounter, preffixNotSet);
+		printErrorInConfig(filename, lineCounter, preffixNotSet);
 	} else if (strcmp(config->spImagesSuffix, "") == 0) {
 		*msg = SP_CONFIG_MISSING_SUFFIX;
-		printError(filename, lineCounter, suffixNotSet);
+		printErrorInConfig(filename, lineCounter, suffixNotSet);
 	} else if (config->spNumOfImages == -1) {
 		*msg = SP_CONFIG_MISSING_NUM_IMAGES;
-		printError(filename, lineCounter, imageNumNotSet);
+		printErrorInConfig(filename, lineCounter, imageNumNotSet);
 	} else {
 		*msg = SP_CONFIG_SUCCESS;
 	}
@@ -262,7 +263,8 @@ SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config) {
 	int pathLength;
 
 	if (pcaPath == NULL || config == NULL) {
-		spLoggerPrintWarning("The function was called with an invalid argument", __FILE__, __func__, __LINE__);
+		spLoggerPrintWarning("The function was called with an invalid argument",
+				__FILE__, __func__, __LINE__);
 		return SP_CONFIG_INVALID_ARGUMENT;
 	}
 
@@ -305,9 +307,9 @@ char* spConfigGetPCAFilename(const SPConfig config, SP_CONFIG_MSG* msg) {
 }
 
 SplitMethod spConfigGetSplitMethod(const SPConfig config, SP_CONFIG_MSG* msg) {
-	if (!getterAssert(config, msg, __func__)) {
-		return UNDEFINED;
-	}
+	assert(msg);
+	assert(config);
+	*msg = SP_CONFIG_SUCCESS;
 	return config->spKDTreeSplitMethod;
 }
 
@@ -543,7 +545,7 @@ SP_CONFIG_MSG createFilePath(char* imagePath, const SPConfig config, int index,
 }
 
 bool getterAssert(const SPConfig config, SP_CONFIG_MSG* msg, const char* func) {
-	char warningMsg[256];
+	char warningMsg[MAX_SIZE];
 
 	assert(msg);
 	if (config == NULL) {

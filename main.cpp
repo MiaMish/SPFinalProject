@@ -103,7 +103,7 @@ int main(int argc, char* argv[]) {
 		if (strcmp(filename, "spcbir.config") == 0) {
 			printf("The default configuration file spcbir.config couldn’t be open\n");
 		} else {
-			printf("The configuration file <filename> couldn’t be open\n");
+			printf("The configuration file %s couldn’t be open\n", filename);
 		}
 		return terminate(config, msg);
 	} else if (msg != SP_CONFIG_SUCCESS) {

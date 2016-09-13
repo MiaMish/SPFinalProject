@@ -12,7 +12,7 @@
 
 /** the options for the cut method when the kd-tree is build **/
 typedef enum sp_methods {
-	RANDOM = 0, MAX_SPREAD = 1, INCREMENTAL = 2, UNDEFINED = 3
+	RANDOM = 0, MAX_SPREAD = 1, INCREMENTAL = 2
 } SplitMethod;
 
 /** the options for the image suffix **/
@@ -21,8 +21,6 @@ typedef enum imageTypes {
 } ImageType;
 
 #define MAX_SIZE 1024
-#define sizeOfSplitMethod 4
-#define sizeOfImageType 4
 
 /*
  * if str is not a decimal number, returns -1
@@ -47,18 +45,25 @@ const char* convertMethodToString(SplitMethod method);
 const char* convertTypeToString(ImageType type);
 
 /*
- * recieves a  string and tries to split it into field and value
+ * @param line - a pointer to not-NULL char array
+ * @param value - a pointer to not-NULL char array
+ *
+ * checks whether line is in format ( )*string( )*=()*string( )*
+ * if yes - saves to value the second string and returns fieldId of first string
  *
  * return 0 - line is empty or a comment
  * return -1 if line format is not field = value
+ * return convertFieldToNum(field) if line is in correct format
  */
 int extractFieldAndValue(const char* line, char* value);
 
 /*
+ * prints to stdout massage regarding error in configuration file
+ *
  * @param filename - the name of the configuration file
  * @param lineNumber >= 0 - the line in the configuration file where error occured
  * @param msg - string with the massage to be printed
  */
-void printError(const char* filename, int lineNumber, char* msg);
+void printErrorInConfig(const char* filename, int lineNumber, char* msg);
 
 #endif /* SPCONFIGUTILS_H_ */

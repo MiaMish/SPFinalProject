@@ -13,10 +13,14 @@
 
 /**
  *
- * TESTERS FOR INTERNAL FUNCTIONS
+ * TESTERS FOR FUNCTIONS IN SPConfigUtils.h
  *
  */
 
+/*
+ * @return true if each call for convertStringToNum returns the expected value
+ * @return false otherwise
+ */
 bool stringToIntTest() {
 	char* str1 = (char*) "abd";
 	char* str2 = (char*) "145";
@@ -46,6 +50,10 @@ bool stringToIntTest() {
 	return true;
 }
 
+/*
+ * @return true if each call for convertFieldToNum returns the expected value
+ * @return false otherwise
+ */
 bool fieldToNumTest() {
 	char* str1 = (char*) "abd";
 	char* str2 = (char*) "";
@@ -67,6 +75,10 @@ bool fieldToNumTest() {
 	return true;
 }
 
+/*
+ * @return true if each call for convertMethodToString returns the expected value
+ * @return false otherwise
+ */
 bool methodToStringTest() {
 	char* str1 = (char*) "RANDOM";
 	char* str2 = (char*) "MAX_SPREAD";
@@ -83,6 +95,10 @@ bool methodToStringTest() {
 	return true;
 }
 
+/*
+ * @return true if each call for convertTypeToString returns the expected value
+ * @return false otherwise
+ */
 bool typeToStringTest() {
 	char* str1 = (char*) ".jpg";
 	char* str2 = (char*) ".png";
@@ -102,6 +118,10 @@ bool typeToStringTest() {
 	return true;
 }
 
+/*
+ * @return true if each call for extractFieldAndValue returns the expected value
+ * @return false otherwise
+ */
 bool extractFieldAndValueTest() {
 	char* filename = (char*) "./files_for_unit_tests/extractFieldAndValueTest.txt";
 	FILE* file = fopen(filename, "r");

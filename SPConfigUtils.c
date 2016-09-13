@@ -72,8 +72,6 @@ const char* convertMethodToString(SplitMethod method) {
 		return "MAX_SPREAD";
 	case 2:
 		return "INCREMENTAL";
-	case 3:
-		return "UNDEFINED";
 	}
 
 	/*shouldn't get to this line */
@@ -102,11 +100,6 @@ const char* convertTypeToString(ImageType type) {
 	return NULL;
 }
 
-/*
- * return 0 - line is empty or a comment
- * return -1 if line format is not field = value
- * return convertFieldToNum(field) if line is in correct format
- */
 int extractFieldAndValue(const char* line, char* value) {
 	 char field[MAX_SIZE] = {'\0'};
 	 int i = 0;
@@ -118,12 +111,12 @@ int extractFieldAndValue(const char* line, char* value) {
 	 }
 
 	 //comment lines or empty lines are allowed
-	 if (line[0] == '#' || line[0] == '\n' || line[0] == '\r\n' || line[0] == '\0') {
+	 if (line[0] == '#' || line[0] == '\n' || line[0] == '\r' || line[0] == '\0') {
 	      return 0;
 	 }
 
 	 //extracting the first string (field) from line
-	 while (line[i] != '\n' && line[i] != '\0' && line[i] != ' ' && line[0] != '\r\n'
+	 while (line[i] != '\n' && line[i] != '\0' && line[i] != ' ' && line[0] != '\r'
 			 && line[i] != '=' && i < MAX_SIZE) {
 		 field[count] = line[i];
 	     count++;
@@ -152,7 +145,7 @@ int extractFieldAndValue(const char* line, char* value) {
 	     i++;
 	 }
 
-	 while (line[i] != '\n' && line[i] != '\r\n' && line[i] != ' ' && line[i] != '=') {
+	 while (line[i] != '\n' && line[i] != '\r' && line[i] != ' ' && line[i] != '=') {
 		 value[count] = line[i];
 	     count++;
 	     i++;
@@ -162,7 +155,7 @@ int extractFieldAndValue(const char* line, char* value) {
 	 }
 	 value[count] = '\0';
 
-	 while (line[i] != '\n' && line[0] != '\r\n' && line[i] != '\0' && i < MAX_SIZE) {
+	 while (line[i] != '\n' && line[0] != '\r' && line[i] != '\0' && i < MAX_SIZE) {
 	     if (line[i] != ' ') {
 	    	 return -1;
 	     }
@@ -172,6 +165,6 @@ int extractFieldAndValue(const char* line, char* value) {
 	 return fieldId;
 }
 
-void printError(const char* filename, int lineNumber, char* msg) {
+void printErrorInConfig(const char* filename, int lineNumber, char* msg) {
 	printf("File: %s\nLine: %d\nMessage: %s\n", filename, lineNumber, msg);
 }

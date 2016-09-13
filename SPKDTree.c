@@ -68,10 +68,6 @@ SPKDTreeNode* Init(SPKDArray* kdArr, SplitMethod splitMethod,
 	case INCREMENTAL:
 		splittingDimension = (parentSplittingDimension + 1) % arrayDimension;
 		break;
-
-	case UNDEFINED:
-		assert(false);
-		return NULL;
 	}
 
 	SPKDArray* leftArr = NULL;

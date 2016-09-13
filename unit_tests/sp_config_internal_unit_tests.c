@@ -17,6 +17,13 @@
 #include "SPLogger.h"
 #include "unit_test_util.h"
 
+/*
+ * checks if after calling to initConfiguration all fields in config hold
+ * the right value
+ *
+ * @return true if condition is met
+ * @return false otherwise
+ */
 bool initConfigurationTest() {
 	SPConfig config;
 	SP_CONFIG_MSG* msg;
@@ -52,6 +59,12 @@ bool initConfigurationTest() {
 	return true;
 }
 
+/*
+ * calls for parseConfigLine with empty and invalid lines
+ *
+ * @return true if after each call msg hold the right values
+ * @return false otherwise
+ */
 bool parseLineGeneralTest() {
 	FILE* file = NULL;
 	SPConfig config = NULL;
@@ -78,6 +91,13 @@ bool parseLineGeneralTest() {
 	return true;
 }
 
+/*
+ * calls for parseConfigLine with various lines defining spConfigSuffix field
+ *
+ * @return true if after each call the field spConfigSuffix and msg
+ * hold the right values
+ * @return false otherwise
+ */
 bool parseLineSuffixTest() {
 	char* fileName = (char*) "./files_for_unit_tests.txt/ParseConfigLineSuffixTest.txt";
 	SP_CONFIG_MSG expectedMsg[6] = {SP_CONFIG_INVALID_STRING, SP_CONFIG_SUCCESS,
@@ -108,6 +128,13 @@ bool parseLineSuffixTest() {
 	return true;
 }
 
+/*
+ * calls for parseConfigLine with various lines defining spExtractionMode field
+ *
+ * @return true if after each call the field spExtractionMode and msg
+ * hold the right values
+ * @return false otherwise
+ */
 bool parseLineModeTest() {
 	char* fileName = (char*) "./files_for_unit_tests.txt/ParseConfigLineModeTest.txt";
 	SP_CONFIG_MSG expectedMsg[3] = {SP_CONFIG_SUCCESS, SP_CONFIG_INVALID_STRING,
@@ -137,6 +164,13 @@ bool parseLineModeTest() {
 	return true;
 }
 
+/*
+ * calls for parseConfigLine with various lines defining spMinimalGUI field
+ *
+ * @return true if after each call the field spMinimalGUI and msg
+ * hold the right values
+ * @return false otherwise
+ */
 bool parseLineGuiTest() {
 	char* fileName = (char*) "./files_for_unit_tests.txt/ParseConfigLineGuiTest.txt";
 	SP_CONFIG_MSG expectedMsg[4] = {SP_CONFIG_INVALID_BOOLEAN, SP_CONFIG_SUCCESS,
@@ -167,6 +201,13 @@ bool parseLineGuiTest() {
 	return true;
 }
 
+/*
+ * calls for parseConfigLine with various lines defining spKDTreeSplitMethod field
+ *
+ * @return true if after each call the field spKDTreeSplitMethod and msg
+ * hold the right values
+ * @return false otherwise
+ */
 bool parseLineMethodTest() {
 	char* fileName = (char*) "./files_for_unit_tests.txt/ParseConfigLineMethodTest.txt";
 	SP_CONFIG_MSG expectedMsg[5] = {SP_CONFIG_SUCCESS, SP_CONFIG_INVALID_STRING,
@@ -197,13 +238,20 @@ bool parseLineMethodTest() {
 	return true;
 }
 
+/*
+ * calls for parseConfigLine with various lines defining char* type fields
+ *
+ * @return true if after each call the fields spKDTreeSplitMethod and msg
+ * hold the right values
+ * @return false otherwise
+ */
 bool parseLineStringTest() {
-	char* fileName = (char*) "./files_for_unit_tests.txt/ParseConfigLineBoolTest.txt";
+	char* fileName = (char*) "./files_for_unit_tests.txt/ParseConfigLineStringTest.txt";
 	SP_CONFIG_MSG expectedMsg[7] = {SP_CONFIG_SUCCESS, SP_CONFIG_SUCCESS,
-			SP_CONFIG_SUCCESS, SP_CONFIG_INVALID_STRING, SP_CONFIG_SUCCESS,
-			SP_CONFIG_SUCCESS , SP_CONFIG_INVALID_STRING};
-	char* expectedStr[7] = {"./somefolder", "baloon", "img", "img", "loggerName",
-			"stdout", "stdout"};
+			SP_CONFIG_SUCCESS, SP_CONFIG_SUCCESS, SP_CONFIG_INVALID_STRING,
+			SP_CONFIG_SUCCESS, SP_CONFIG_SUCCESS , SP_CONFIG_INVALID_STRING};
+	char* expectedStr[7] = {"./somefolder", "baloon", "img", "someName", "someName"
+			, "loggerName", "stdout", "stdout"};
 
 	FILE* file = NULL;
 	SPConfig config = NULL;
@@ -237,6 +285,13 @@ bool parseLineStringTest() {
 	return true;
 }
 
+/*
+ * calls for parseConfigLine with various lines defining int type fields
+ *
+ * @return true if after each call the fields and msg
+ * hold the right values
+ * @return false otherwise
+ */
 bool parseLineNumeralTest() {
 	char* fileName = (char*) "./files_for_unit_tests.txt/ParseConfigLineNumeralTest.txt";
 	SP_CONFIG_MSG expectedMsg[21] = {SP_CONFIG_INVALID_INTEGER, SP_CONFIG_SUCCESS,

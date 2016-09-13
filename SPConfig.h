@@ -242,11 +242,10 @@ char* spConfigGetPCAFilename(const SPConfig config, SP_CONFIG_MSG* msg);
  * of spKDTreeSplitMethod.
  *
  * @param config - the configuration structure
- * @assert msg != NULL
+ * @assert config != NULL
  * @param msg - pointer in which the msg returned by the function is stored
- * @return type SplitMethod, UNDEFINED otherwise.
+ * @assert msg != NULL
  *
- * - SP_CONFIG_INVALID_ARGUMENT - if config == NULL
  * - SP_CONFIG_SUCCESS - in case of success
  */
 SplitMethod spConfigGetSplitMethod(const SPConfig config, SP_CONFIG_MSG* msg);
