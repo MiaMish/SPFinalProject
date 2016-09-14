@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
 	int nonExistentCounter = 0;
 
 	// should be at most 2 arguments: program name and config name
-	if (argc > 3) {
+	if (argc > 3 || argc == 2) {
 		return terminate(NULL, SP_CONFIG_INVALID_COMMANDLINE);
 	}
 

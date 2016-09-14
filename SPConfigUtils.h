@@ -22,6 +22,11 @@ typedef enum imageTypes {
 
 #define MAX_SIZE 1024
 
+#define SKIP_SPACES(ptr)  \
+		while (*ptr == ' ') {  \
+			ptr++;  \
+		}
+
 /*
  * if str is not a decimal number, returns -1
  * else returns an integer representing str

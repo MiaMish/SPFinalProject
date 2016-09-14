@@ -48,7 +48,7 @@ int convertStringToNum(char str[]) {
 	if (str[0] == '+') {
 		i = 1;
 	}
-	while (str[i] != '\n' && str[i] != EOF && str[i] != '\0') {
+	while (str[i] != '\n' && str[i] != '\0' && str[i] != '\r') {
 		if (!isdigit(str[i])) {
 			return -1;
 		}
@@ -116,7 +116,7 @@ int extractFieldAndValue(const char* line, char* value) {
 
 	SKIP_SPACES(line);
 
-	if (*line == '#') {
+	if (*line == '#'  || *line == '\n' || *line == '\r') {
 		return 0;
 	}
 
@@ -138,7 +138,7 @@ int extractFieldAndValue(const char* line, char* value) {
 		return -1;
 	}
 
-	if (dummy[0] != '\0') {
+	if (value[0] == '\0' || dummy[0] != '\0') {
 		return -1;
 	}
 
