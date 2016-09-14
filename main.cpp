@@ -55,7 +55,9 @@ SP_LOGGER_MSG createLogger(SPConfig config) {
  * @return 1
  */
 int terminate(SPConfig config, SP_CONFIG_MSG msg) {
-	printf("Exiting...\n");
+	if (msg == SP_CONFIG_SUCCESS) {
+		printf("Exiting...\n");
+	}
 
 	if (config != NULL) {
 		spConfigDestroy(config);
@@ -260,8 +262,6 @@ int main(int argc, char* argv[]) {
 
 			if (spConfigMinimalGui(config, &msg)) {
 				imageProc.showImage(imagePath);
-				getchar();
-				//until user presses some key, the same image will show on screen
 			} else {
 				if (i == 0) {
 					printf("Best candidates for - %s - are:\n", queryPath);
