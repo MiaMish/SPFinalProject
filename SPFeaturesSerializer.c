@@ -68,7 +68,7 @@ SP_CONFIG_MSG readImageFeaturesFromFile(SPPoint** imFeatures, int* numOfFeats,
 	SP_CONFIG_MSG msg = getFeatsFile(config, imageIndex, &featsFile, "r+");
 	if (msg != SP_CONFIG_SUCCESS) {
 		sprintf(warning, "Feats file for image number %d doesn't exist\n", imageIndex);
-		spLoggerPrintWarning(warning, __FILE__, __func__, __LINE__);
+		spLoggerPrintError(warning, __FILE__, __func__, __LINE__);
 		return msg;
 	}
 
