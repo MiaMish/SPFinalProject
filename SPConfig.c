@@ -249,13 +249,11 @@ char* spConfigGetLogName(const SPConfig config, SP_CONFIG_MSG* msg) {
 }
 
 SP_CONFIG_MSG spConfigGetImagePath(char* imagePath, const SPConfig config, int index) {
-
 	return createFilePath(imagePath, config, index, config->spImagesSuffix,
 			__func__);
 }
 
 SP_CONFIG_MSG spConfigGetImageFeatsPath(char* imagePath, const SPConfig config,	int index) {
-
 	return createFilePath(imagePath, config, index, spFeatsSuffix, __func__);
 }
 
