@@ -44,13 +44,16 @@ int spBPQueueGetMaxSize(SPBPQueue source){
 }
 
 SP_BPQUEUE_MSG spBPQueueEnqueue(SPBPQueue source, SPListElement element){
+	SPListElement node;
+	int cnt;
+	
 	if (element == NULL || source == NULL || source->list == NULL){
 		return SP_BPQUEUE_INVALID_ARGUMENT;
 	}
 	if (source->capacity <= 0){
 		return SP_BPQUEUE_FULL;
 	}
-	SPListElement node = spListGetFirst(source->list);
+	node = spListGetFirst(source->list);
 
 	while(1){
 		if (node == NULL){
@@ -67,7 +70,7 @@ SP_BPQUEUE_MSG spBPQueueEnqueue(SPBPQueue source, SPListElement element){
 	}
 
 	if (spListGetSize(source->list) > source->capacity){
-		int cnt = 0;
+		cnt = 0;
 		node = spListGetFirst(source->list);
 		while(cnt < spListGetSize(source->list) - 1){
 			node = spListGetNext(source->list);
@@ -85,13 +88,13 @@ SP_BPQUEUE_MSG spBPQueueEnqueue(SPBPQueue source, SPListElement element){
 
 
 SP_BPQUEUE_MSG spBPQueueDequeue(SPBPQueue source){
-
+	int cnt = 0;
+	SPListElement node;
 	if (spListGetSize(source->list) == 0){
 		return SP_BPQUEUE_EMPTY;
 	}
 
-	int cnt = 0;
-	SPListElement node = spListGetFirst(source->list);
+	node = spListGetFirst(source->list);
 	while(cnt < spListGetSize(source->list) - 1){
 		node = spListGetNext(source->list);
 		if (node == NULL) {
