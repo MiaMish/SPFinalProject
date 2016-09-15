@@ -42,16 +42,17 @@ SP_CONFIG_MSG writeImageFeaturesToFile(SPPoint* imFeatures, int numOfFeats,
 		SPConfig config, int imageIndex) {
 	FILE* featsFile;
 	SP_CONFIG_MSG msg = getFeatsFile(config, imageIndex, &featsFile, "w+");
+	int i, j;
 	if (msg != SP_CONFIG_SUCCESS) {
 		return msg;
 	}
 
 	fprintf(featsFile, "%d\n", numOfFeats);
-	for (int i = 0; i < numOfFeats; i++) {
+	for (i = 0; i < numOfFeats; i++) {
 		SPPoint point = imFeatures[i];
 		fprintf(featsFile, "%d,%d\n", spPointGetIndex(point),
 				spPointGetDimension(point));
-		for (int j = 0; j < spPointGetDimension(point); j++) {
+		for (j = 0; j < spPointGetDimension(point); j++) {
 			fprintf(featsFile, "%f\n", spPointGetAxisCoor(point, j));
 		}
 	}
@@ -66,6 +67,7 @@ SP_CONFIG_MSG readImageFeaturesFromFile(SPPoint** imFeatures, int* numOfFeats,
 	FILE* featsFile;
 	char warning[MAX_SIZE];
 	SP_CONFIG_MSG msg = getFeatsFile(config, imageIndex, &featsFile, "r+");
+	int i, j;
 	if (msg != SP_CONFIG_SUCCESS) {
 		sprintf(warning, "Feats file for image number %d doesn't exist\n", imageIndex);
 		spLoggerPrintError(warning, __FILE__, __func__, __LINE__);
@@ -77,14 +79,14 @@ SP_CONFIG_MSG readImageFeaturesFromFile(SPPoint** imFeatures, int* numOfFeats,
 	*imFeatures = (SPPoint*) malloc(sizeof(SPPoint) * *numOfFeats);
 	VERIFY_ALLOC(*imFeatures);
 
-	for (int i = 0; i < *numOfFeats; i++) {
+	for (i = 0; i < *numOfFeats; i++) {
 		int index;
 		int dimension;
 		fscanf(featsFile, "%d,%d", &index, &dimension);
 
 		double values[dimension];
 
-		for (int j = 0; j < dimension; j++) {
+		for (j = 0; j < dimension; j++) {
 			fscanf(featsFile, "%lf", &(values[j]));
 		}
 
