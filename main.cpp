@@ -71,8 +71,6 @@ int terminate(SPConfig config, SP_CONFIG_MSG msg) {
  * main entry point, returns status code
  */
 int main(int argc, char* argv[]) {
-	setvbuf (stdout, NULL, _IONBF, BUFSIZ);
-
 	const char* filename = "spcbir.config"; //default name
 	SP_CONFIG_MSG msg;
 	SP_LOGGER_MSG logMsg;
@@ -81,7 +79,18 @@ int main(int argc, char* argv[]) {
 	SPPoint* imFeatures = NULL;
 	int numOfFeats;
 	int numOfImages;
-	int i;
+	int i, j;
+	ImageProc* imageProc = NULL;
+	SPPoint** featuresPerImage;
+	int* featureCountPerImage;
+	int totalFeatures = 0;
+	SPPoint* allFeatures;
+	int featureIndex;
+	SPKDArray* kdArray;
+	SPKDTreeNode* kdTree;
+	char queryPath[MAX_PATH];
+	
+	setvbuf (stdout, NULL, _IONBF, BUFSIZ);
 
 	// should be at most 2 arguments: program name and config name
 	if (argc > 3 || argc == 2) {
@@ -102,9 +111,9 @@ int main(int argc, char* argv[]) {
 
 	if (msg == SP_CONFIG_CANNOT_OPEN_FILE) {
 		if (strcmp(filename, "spcbir.config") == 0) {
-			printf("The default configuration file spcbir.config couldn’t be open\n");
+			printf("The default configuration file spcbir.config couldnâ€™t be open\n");
 		} else {
-			printf("The configuration file %s couldn’t be open\n", filename);
+			printf("The configuration file %s couldnâ€™t be open\n", filename);
 		}
 		return terminate(config, msg);
 	} else if (msg != SP_CONFIG_SUCCESS) {
@@ -121,7 +130,7 @@ int main(int argc, char* argv[]) {
 	// extracting features from images or from feats file
 
 	numOfImages = spConfigGetNumOfImages(config, &msg);
-	ImageProc imageProc(config);
+	imageProc = new ImageProc(config);
 
 	if (spConfigIsExtractionMode(config, &msg)) {
 		for (i = 0; i < numOfImages; i++) {
@@ -130,7 +139,7 @@ int main(int argc, char* argv[]) {
 				spLoggerPrintError(imPathErr, __FILE__, __func__, __LINE__);
 				return terminate(config, msg);
 			}
-			imFeatures = imageProc.getImageFeatures(imagePath, i, &numOfFeats);
+			imFeatures = imageProc->getImageFeatures(imagePath, i, &numOfFeats);
 			if (imFeatures == NULL) {
 				spLoggerPrintError(unknownErr, __FILE__, __func__, __LINE__);
 				return terminate(config, msg);
@@ -140,7 +149,7 @@ int main(int argc, char* argv[]) {
 			if (msg != SP_CONFIG_SUCCESS) {
 				terminate(config, msg);
 			}
-			for (int j = 0; j<numOfFeats; j++) {
+			for (j = 0; j<numOfFeats; j++) {
 				spPointDestroy(imFeatures[j]);
 			}
 			free(imFeatures);
@@ -149,12 +158,10 @@ int main(int argc, char* argv[]) {
 
 	// importing features from files
 
-	SPPoint** featuresPerImage = (SPPoint**) malloc(sizeof(SPPoint*) * numOfImages);
+	featuresPerImage = (SPPoint**) malloc(sizeof(SPPoint*) * numOfImages);
 	VERIFY_ALLOC(featuresPerImage);
-	int* featureCountPerImage = (int*) malloc(sizeof(int) * numOfImages);
+	featureCountPerImage = (int*) malloc(sizeof(int) * numOfImages);
 	VERIFY_ALLOC(featureCountPerImage);
-
-	int totalFeatures = 0;
 
 	for (i = 0; i < numOfImages; i++) {
 		readImageFeaturesFromFile(&(featuresPerImage[i]),
@@ -165,24 +172,24 @@ int main(int argc, char* argv[]) {
 		totalFeatures += featureCountPerImage[i];
 	}
 
-	SPPoint* allFeatures = (SPPoint*) malloc(sizeof(SPPoint) * totalFeatures);
+	allFeatures = (SPPoint*) malloc(sizeof(SPPoint) * totalFeatures);
 	VERIFY_ALLOC(allFeatures);
-	int featureIndex = 0;
+	featureIndex = 0;
 	for (i = 0; i < numOfImages; i++) {
-		for (int j = 0; j < featureCountPerImage[i]; j++, featureIndex++) {
+		for (j = 0; j < featureCountPerImage[i]; j++, featureIndex++) {
 			allFeatures[featureIndex] = featuresPerImage[i][j];
 		}
 	}
 
 	// building kd-array
-
-	SPKDArray* kdArray = spKDArrayInit(allFeatures, totalFeatures,
+	
+	kdArray = spKDArrayInit(allFeatures, totalFeatures,
 			spConfigGetPCADim(config, &msg));
 	VERIFY_ALLOC(kdArray);
 
 	free(allFeatures);
 	for (i = 0; i < numOfImages; i++) {
-		for (int j = 0; j < featureCountPerImage[i]; j++, featureIndex++) {
+		for (j = 0; j < featureCountPerImage[i]; j++, featureIndex++) {
 			spPointDestroy(featuresPerImage[i][j]);
 		}
 		free(featuresPerImage[i]);
@@ -192,16 +199,17 @@ int main(int argc, char* argv[]) {
 
 	// building kd-tree
 
-	SPKDTreeNode* kdTree = spKDTreeInit(kdArray,
+	kdTree = spKDTreeInit(kdArray,
 			spConfigGetSplitMethod(config, &msg));
 	VERIFY_ALLOC(kdTree);
 	spKDArrayDestroy(kdArray);
 
 	// getting user query until hitting "<>"
 
-	char queryPath[MAX_PATH];
-
 	while (true) {
+		int queryNumOfFeats;
+		SPPoint* queryFeats;
+		int* histogram;
 		printf("Please enter an image path:\n");
 
 		if (!scanf("%s", queryPath)) {
@@ -213,8 +221,8 @@ int main(int argc, char* argv[]) {
 
 		// calculate feats of given query
 
-		int queryNumOfFeats;
-		SPPoint* queryFeats = imageProc.getImageFeatures(queryPath, 0,	&queryNumOfFeats);
+		
+		queryFeats = imageProc->getImageFeatures(queryPath, 0,	&queryNumOfFeats);
 		if (queryFeats == NULL) {
 			spLoggerPrintError(unknownErr, __FILE__, __func__, __LINE__);
 			terminate(config, SP_CONFIG_UNKNOWN_ERROR);
@@ -222,7 +230,7 @@ int main(int argc, char* argv[]) {
 
 		// compare query feats to all feats in kd-tree and apply to histogram
 
-		int* histogram = (int*) calloc(sizeof(int), numOfImages);
+		histogram = (int*) calloc(sizeof(int), numOfImages);
 		VERIFY_ALLOC(histogram);
 
 		for (i = 0; i < queryNumOfFeats; i++) {
@@ -244,7 +252,7 @@ int main(int argc, char* argv[]) {
 		for (i = 0; i < simIms; i++) {
 
 			int maxImageIndex = 0;
-			for (int j = 1; j < numOfImages; j++) {
+			for (j = 1; j < numOfImages; j++) {
 				if (histogram[maxImageIndex] < histogram[j]) {
 					maxImageIndex = j;
 				}
@@ -257,7 +265,7 @@ int main(int argc, char* argv[]) {
 			}
 
 			if (spConfigMinimalGui(config, &msg)) {
-				imageProc.showImage(imagePath);
+				imageProc->showImage(imagePath);
 			} else {
 				if (i == 0) {
 					printf("Best candidates for - %s - are:\n", queryPath);
@@ -271,6 +279,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	spKDTreeDestroy(kdTree);
+	delete imageProc;
 
 	return terminate(config, SP_CONFIG_SUCCESS);
 }
