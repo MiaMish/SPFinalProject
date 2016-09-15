@@ -149,7 +149,7 @@ void sortIndices(SPKDArray* kdArr, int axis) {
 
 void spKDArraySplit(SPKDArray* kdArr, int coor, SPKDArray** kdLeft,
 		SPKDArray** kdRight) {
-	int i, j, currIndex, leftSpot, rightSpot, currIndex;
+	int i, j, currIndex, leftSpot, rightSpot;
 	
 	int* leftMap = (int*) calloc(kdArr->pointsCount, sizeof(int));
 	int* rightMap = (int*) calloc(kdArr->pointsCount, sizeof(int));
