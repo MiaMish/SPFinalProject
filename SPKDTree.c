@@ -1,7 +1,7 @@
 /*
  * SPKDTree.c
  *
- *  Created on: 16 áàåâ× 2016
+ *  Created on: 16 Ã¡Ã Ã¥Ã¢Ã— 2016
  *      Author: user
  */
 
@@ -38,6 +38,10 @@ int randomDimension(int max) {
  */
 SPKDTreeNode* Init(SPKDArray* kdArr, SplitMethod splitMethod,
 		int parentSplittingDimension) {
+	int splittingDimension, arrayDimension;
+	SPKDArray* leftArr = NULL;
+	SPKDArray* rightArr = NULL;
+	
 	SPKDTreeNode* root = (SPKDTreeNode*) malloc(sizeof(SPKDTreeNode));
 	NULL_CHECK(root, root);
 
@@ -51,8 +55,8 @@ SPKDTreeNode* Init(SPKDArray* kdArr, SplitMethod splitMethod,
 		return root;
 	}
 
-	int splittingDimension = INVALID_DIM;
-	int arrayDimension = spKDArrayGetDimension(kdArr);
+	splittingDimension = INVALID_DIM;
+	arrayDimension = spKDArrayGetDimension(kdArr);
 
 	switch (splitMethod) {
 	case MAX_SPREAD:
@@ -70,8 +74,6 @@ SPKDTreeNode* Init(SPKDArray* kdArr, SplitMethod splitMethod,
 		break;
 	}
 
-	SPKDArray* leftArr = NULL;
-	SPKDArray* rightArr = NULL;
 	spKDArraySplit(kdArr, splittingDimension, &leftArr, &rightArr);
 	NULL_CHECK(leftArr, root);
 	NULL_CHECK(rightArr, root);
@@ -108,13 +110,16 @@ void spKDTreeDestroy(SPKDTreeNode* root) {
  * Helper function to perform neighbor search
  */
 void neighborSearch(SPKDTreeNode* root, SPBPQueue bpq, SPPoint point) {
+	int index;
+	double dist, pointValue, maxVal, diff;
+	
 	if (root == NULL) {
 		return;
 	}
 
 	if (root->leaf != NULL) {
-		int index = spPointGetIndex(root->leaf);
-		double dist = spPointL2SquaredDistance(root->leaf, point);
+		index = spPointGetIndex(root->leaf);
+		dist = spPointL2SquaredDistance(root->leaf, point);
 		SPListElement elem = spListElementCreate(index, dist);
 		if (elem == NULL) {
 			return;
@@ -124,7 +129,7 @@ void neighborSearch(SPKDTreeNode* root, SPBPQueue bpq, SPPoint point) {
 		return;
 	}
 
-	double pointValue = spPointGetAxisCoor(point, root->dim);
+	pointValue = spPointGetAxisCoor(point, root->dim);
 	SPKDTreeNode* firstToSearch = NULL;
 	SPKDTreeNode* secondToSearch = NULL;
 	if (pointValue <= root->medianValue) {
@@ -137,8 +142,8 @@ void neighborSearch(SPKDTreeNode* root, SPBPQueue bpq, SPPoint point) {
 
 	neighborSearch(firstToSearch, bpq, point);
 
-	double maxVal = spBPQueueMaxValue(bpq);
-	double diff = (pointValue - root->medianValue) * (pointValue - root->medianValue);
+	maxVal = spBPQueueMaxValue(bpq);
+	diff = (pointValue - root->medianValue) * (pointValue - root->medianValue);
 	if (!spBPQueueIsFull(bpq) || diff < maxVal) {
 		neighborSearch(secondToSearch, bpq, point);
 	}
