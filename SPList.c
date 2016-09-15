@@ -18,10 +18,11 @@ struct sp_list_t {
 
 Node createNode(Node previous, Node next, SPListElement element) {
 	SPListElement newElement = spListElementCopy(element);
+	Node newNode;
 	if (newElement == NULL) {
 		return NULL;
 	}
-	Node newNode = (Node) malloc(sizeof(*newNode));
+	newNode = (Node) malloc(sizeof(*newNode));
 	if (newNode == NULL) {
 		spListElementDestroy(newElement);
 		return NULL;
@@ -72,14 +73,16 @@ SPList spListCreate() {
 }
 
 SPList spListCopy(SPList list) {
+	SPList copyList;
+	SPListElement currentElement;
 	if (list == NULL) {
 		return NULL;
 	}
-	SPList copyList = spListCreate();
+	copyList = spListCreate();
 	if (copyList == NULL) {
 		return NULL;
 	}
-	SPListElement currentElement = spListGetFirst(list);
+	currentElement = spListGetFirst(list);
 	while (currentElement) {
 		if (spListInsertLast(copyList, currentElement) != SP_LIST_SUCCESS) {
 			spListDestroy(copyList);
@@ -129,10 +132,11 @@ SPListElement spListGetCurrent(SPList list) {
 }
 
 SP_LIST_MSG spListInsertFirst(SPList list, SPListElement element) {
+	Node newNode;
 	if (list == NULL || element == NULL) {
 		return SP_LIST_NULL_ARGUMENT;
 	}
-	Node newNode = createNode(list->head, list->head->next, element);
+	newNode = createNode(list->head, list->head->next, element);
 	if (newNode == NULL) {
 		return SP_LIST_OUT_OF_MEMORY;
 	}
@@ -143,10 +147,11 @@ SP_LIST_MSG spListInsertFirst(SPList list, SPListElement element) {
 }
 
 SP_LIST_MSG spListInsertLast(SPList list, SPListElement element) {
+	Node newNode;
 	if (list == NULL || element == NULL) {
 		return SP_LIST_NULL_ARGUMENT;
 	}
-	Node newNode = createNode(list->tail->previous, list->tail, element);
+	newNode = createNode(list->tail->previous, list->tail, element);
 	if (newNode == NULL) {
 		return SP_LIST_OUT_OF_MEMORY;
 	}
@@ -157,13 +162,14 @@ SP_LIST_MSG spListInsertLast(SPList list, SPListElement element) {
 }
 
 SP_LIST_MSG spListInsertBeforeCurrent(SPList list, SPListElement element) {
+	Node newNode;
 	if (list == NULL || element == NULL) {
 		return SP_LIST_NULL_ARGUMENT;
 	}
 	if (list->current == NULL) {
 		return SP_LIST_INVALID_CURRENT;
 	}
-	Node newNode = createNode(list->current->previous, list->current, element);
+	newNode = createNode(list->current->previous, list->current, element);
 	if (newNode == NULL) {
 		return SP_LIST_OUT_OF_MEMORY;
 	}
@@ -174,6 +180,8 @@ SP_LIST_MSG spListInsertBeforeCurrent(SPList list, SPListElement element) {
 }
 
 SP_LIST_MSG spListInsertAfterCurrent(SPList list, SPListElement element) {
+	Node tempCurrent;
+	SP_LIST_MSG res;
 	if (list == NULL || element == NULL) {
 		return SP_LIST_NULL_ARGUMENT;
 	}
@@ -182,9 +190,9 @@ SP_LIST_MSG spListInsertAfterCurrent(SPList list, SPListElement element) {
 	} else if (list->current == list->tail->previous) {
 		return spListInsertLast(list, element);
 	} else {
-		Node tempCurrent = list->current;
+		tempCurrent = list->current;
 		list->current = list->current->next;
-		SP_LIST_MSG res = spListInsertBeforeCurrent(list, element);
+		res = spListInsertBeforeCurrent(list, element);
 		list->current = tempCurrent;
 		return res;
 	}
